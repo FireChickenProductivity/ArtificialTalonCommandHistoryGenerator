@@ -12,6 +12,9 @@ class PatternMatcher:
     def get_name(self) -> str:
         pass
 
+    def get_priority(self) -> int:
+        return 0
+
 class SingleCharacterPatternMatcher(PatternMatcher):
     def __init__(self, is_valid_character: Callable[[str], bool], name: str):
         self.is_valid_character = is_valid_character
@@ -46,6 +49,9 @@ class WordPatternMatcher(PatternMatcher):
     
     def get_name(self) -> str:
         return "word"
+
+    def get_priority(self) -> int:
+        return 1
 
 def load_words_from_text():
     current_directory = os.path.dirname(__file__)
