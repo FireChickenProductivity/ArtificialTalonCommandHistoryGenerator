@@ -6,20 +6,19 @@ class CurrentText:
     def __init__(self):
         self.text = ""
         self.next_character = ""
-        self.index = -1 #this becomes zero when the first character is added
     
     def append_character(self, character: str):
         if self.next_character: self.text += self.next_character
         self.next_character = character
-        self.index += 1
     
+    def remove_last_character(self):
+        self.next_character = self.text[-1]
+        self.text = self.text[:-1]
+
     def reset_text_information(self):
         self.text = ""
         self.next_character = ""
         
-    def set_index_for_backtracking(self, starting_index: int):
-        self.index = starting_index - 1
-    
     def get_text(self):
         return self.text
 
@@ -29,14 +28,11 @@ class CurrentText:
     def compute_total_text(self):
         return self.text + self.next_character
     
-    def get_index(self):
-        return self.index
-    
     def __repr__(self):
         return self.__str__()
     
     def __str__(self):
-        return f"CurrentText(text: {self.text}, next_character: {self.next_character}, index: {self.index})"
+        return f"CurrentText(text: {self.text}, next_character: {self.next_character})"
 
 class PatternManager:
     def __init__(self):
@@ -47,6 +43,7 @@ class PatternManager:
         self.matching_pattern = None
         self.patterns_to_consider = self.patterns
         self.ruled_out_patterns = []
+        self.patterns_that_matched_partway = []
     
     def has_match(self) -> bool:
         return self.matching_pattern is not None
@@ -75,7 +72,7 @@ class PatternManager:
         self.matching_pattern = None
         self.patterns_to_consider = self.patterns
         self.ruled_out_patterns = []
-
+        self.patterns_that_matched_partway = []
 
 
 class TextParser:
@@ -95,16 +92,34 @@ class TextParser:
         self.text_information.reset_text_information()
 
     def generate_command_history_for_text(self, text: str):
-        for index, character in enumerate(text):
-            self.text_information.append_character(character)
+        index = 0
+        match_found = False
+        found_match_to_process = False
+        while index < len(text):
+            self.text_information.append_character(text[index])
             self.pattern_manager.handle_text_information(self.text_information)
+            no_pattern_could_potentially_match = self.pattern_manager.no_pattern_could_potentially_match(self.text_information)
             if self.pattern_manager.has_match():
-                self.handle_match()
-            elif self.pattern_manager.no_pattern_could_potentially_match(self.text_information, self.next_character):
+                match_found = True
+                print('found match')
+            elif match_found and no_pattern_could_potentially_match:
+                print('need to process much')
+                found_match_to_process = True
+            elif no_pattern_could_potentially_match:
+                print('nothing could match')
                 self.reset_text_information()
-                print('Could not find a match for: ', self.text_information)
+            if found_match_to_process:
+                print('found_match_to_process', found_match_to_process)
+                self.text_information.remove_last_character()
+                self.pattern_manager.handle_text_information(self.text_information)
+                self.handle_match()
+                found_match_to_process = False
+                match_found = False
+            else:
+                index += 1
+        if self.pattern_manager.has_match():
+            self.handle_match()
             
-
 def create_command_history_list_from_text(text: str):
     command_history = []
     def on_command_creation(command):
