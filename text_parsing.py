@@ -62,7 +62,8 @@ class Match:
         return f"Match(pattern: {self.pattern.get_name()}, text_information: {self.text_information})"
     
     def __eq__(self, other):
-        return self.pattern.get_name() == other.pattern.get_name() and self.text_information == other.text_information
+        return self.pattern.get_name() == other.pattern.get_name() and \
+            self.text_information.get_index() == other.text_information.get_index()
 
 class PatternManager:
     def __init__(self):
@@ -90,7 +91,9 @@ class PatternManager:
         pattern = self.matching_pattern
         if not pattern:
             pattern = self.last_match.get_pattern()
-        return create_command_from_pattern_matcher(pattern, text_information.compute_total_text())
+            text_information = self.last_match.get_text_information()
+        command = create_command_from_pattern_matcher(pattern, text_information.compute_total_text())
+        return command
 
     def handle_text_information(self, text_information: CurrentText):
         text = text_information.get_text()

@@ -140,6 +140,35 @@ class TextParsingTest(unittest.TestCase):
         text = "!.\n?"
         command_history = create_command_history_list_from_text(text)
         assert_command_histories_match(self, command_history, expected_command_history)
+    
+    def test_handles_single_word_only(self):
+        expected_command_history = [
+            Command('word test', [BasicAction("insert", ["test"])]),
+        ]
+        text = "test"
+        command_history = create_command_history_list_from_text(text)
+        assert_command_histories_match(self, command_history, expected_command_history)
+    
+    def test_handles_words_only(self):
+        expected_command_history = [
+            Command('word test', [BasicAction("insert", ["test"])]),
+            Command('word this', [BasicAction("insert", ["this"])]),
+        ]
+        text = "testthis"
+        command_history = create_command_history_list_from_text(text)
+        assert_command_histories_match(self, command_history, expected_command_history)
+    
+    def test_handles_words_and_symbols(self):
+        expected_command_history = [
+            Command('word test', [BasicAction("insert", ["test"])]),
+            create_bang_command(),
+            Command('word this', [BasicAction("insert", ["this"])]),
+            create_dot_command(),
+            create_question_command(),
+        ]
+        text = "test!this.?"
+        command_history = create_command_history_list_from_text(text)
+        assert_command_histories_match(self, command_history, expected_command_history)
         
 if __name__ == '__main__':
     unittest.main()
