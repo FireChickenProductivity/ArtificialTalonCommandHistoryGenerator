@@ -2,6 +2,12 @@ from action_records import Command
 from typing import Callable, List
 from patterns import PatternMatcher, create_new_line_pattern_matcher, create_symbol_pattern_matcher, create_command_from_pattern_matcher
 
+class PatternRuledOutForBacktracking:
+    def __init__(self, pattern: PatternMatcher, index_to_restore: int):
+        self.pattern = pattern
+        self.index_to_restore = index_to_restore
+
+
 class PatternManager:
     def __init__(self):
         self.patterns: List[PatternMatcher] = [
@@ -9,6 +15,8 @@ class PatternManager:
             create_symbol_pattern_matcher()
         ]
         self.matching_pattern = None
+        self.patterns_to_consider = self.patterns
+        self.ruled_out_patterns = []
     
     def has_match(self) -> bool:
         return self.matching_pattern is not None
@@ -29,6 +37,33 @@ class PatternManager:
                 return False
         return True
 
+class CurrentText:
+    def __init__(self):
+        self.text = ""
+        self.next_character = ""
+        self.index = -1 #this becomes zero when the first character is added
+    
+    def append_character(self, character: str):
+        self.text += character
+        self.next_character = character
+        self.index += 1
+    
+    def reset_text_information(self):
+        self.text = ""
+        self.next_character = ""
+        
+    def set_index_for_backtracking(self, starting_index: int):
+        self.index = starting_index - 1
+    
+    def get_text(self):
+        return self.text
+
+    def get_next_character(self):
+        return self.next_character
+    
+    def get_index(self):
+        return self.index
+
 class TextParser:
     """Generates an artificial command history that could have created all or most of the input text."""
     def __init__(self, on_command_creation: Callable[[Command], None]):
@@ -47,7 +82,7 @@ class TextParser:
         self.current_text = ""
 
     def generate_command_history_for_text(self, text: str):
-        for character in text:
+        for index, character in enumerate(text):
             self.next_character = character
             self.pattern_manager.handle_text_and_next_character(self.current_text, self.next_character)
             self.current_text += self.next_character
