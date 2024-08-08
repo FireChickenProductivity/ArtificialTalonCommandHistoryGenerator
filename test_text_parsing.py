@@ -122,6 +122,10 @@ def create_enter_command():
     action = BasicAction("insert", ["\n"])
     return Command('enter', [action])
 
+def create_z_command():
+    action = BasicAction("insert", ["z"])
+    return Command('zip', [action])
+
 class TextParsingTest(unittest.TestCase):
     def test_handles_symbols_only(self):
         expected_command_history = [create_bang_command(), create_dot_command(), create_question_command()]
@@ -167,6 +171,15 @@ class TextParsingTest(unittest.TestCase):
             create_question_command(),
         ]
         text = "test!this.?"
+        command_history = create_command_history_list_from_text(text)
+        assert_command_histories_match(self, command_history, expected_command_history)
+    
+    def test_handles_word_and_letter(self):
+        expected_command_history = [
+            Command('word test', [BasicAction("insert", ["test"])]),
+            create_z_command(),
+        ]
+        text = "testz"
         command_history = create_command_history_list_from_text(text)
         assert_command_histories_match(self, command_history, expected_command_history)
         
