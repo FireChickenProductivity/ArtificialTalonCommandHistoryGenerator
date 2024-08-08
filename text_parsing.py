@@ -101,15 +101,11 @@ class TextParser:
             no_pattern_could_potentially_match = self.pattern_manager.no_pattern_could_potentially_match(self.text_information)
             if self.pattern_manager.has_match():
                 match_found = True
-                print('found match')
             elif match_found and no_pattern_could_potentially_match:
-                print('need to process much')
                 found_match_to_process = True
             elif no_pattern_could_potentially_match:
-                print('nothing could match')
                 self.reset_text_information()
             if found_match_to_process:
-                print('found_match_to_process', found_match_to_process)
                 self.text_information.remove_last_character()
                 self.pattern_manager.handle_text_information(self.text_information)
                 self.handle_match()
