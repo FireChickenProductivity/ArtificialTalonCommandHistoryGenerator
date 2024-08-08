@@ -1,4 +1,5 @@
-from patterns import SYMBOLS_TO_SPOKEN_FORM, create_new_line_pattern_matcher, create_symbol_pattern_matcher, create_command_from_pattern_matcher
+from patterns import SYMBOLS_TO_SPOKEN_FORM, create_new_line_pattern_matcher, create_symbol_pattern_matcher, create_command_from_pattern_matcher, \
+    create_word_pattern_matcher
 from text_parsing import create_command_history_list_from_text
 from action_records import Command, BasicAction
 import unittest
@@ -50,6 +51,36 @@ class NewLinePatternMatcherTestCase(unittest.TestCase):
         command = create_command_from_pattern_matcher(pattern_matcher, '\n')
         assert_command_has_correct_name(self, command, 'enter')
         assert_insert_command_matches_text(self, command, '\n')
+
+class WordPatternMatcherTestCase(unittest.TestCase):
+    def test_handles_not_a_word(self):
+        pattern_matcher = create_word_pattern_matcher()
+        invalid_word = "chickenl"
+        self.assertFalse(pattern_matcher.does_belong_to_pattern(invalid_word, "c"))
+    
+    def test_handles_valid_word(self):
+        pattern_matcher = create_word_pattern_matcher()
+        valid_word = "test"
+        self.assertTrue(pattern_matcher.does_belong_to_pattern(valid_word[:-1], valid_word[-1]))
+    
+    def test_handles_valid_next_character(self):
+        pattern_matcher = create_word_pattern_matcher()
+        valid_word = "test"
+        self.assertTrue(pattern_matcher.could_potentially_belong_to_pattern(valid_word, "c"))
+    
+    def test_handles_invalid_next_character(self):
+        pattern_matcher = create_word_pattern_matcher()
+        valid_word = "test"
+        invalid_characters = ["1", " ", "\n"]
+        for invalid_character in invalid_characters:
+            self.assertFalse(pattern_matcher.could_potentially_belong_to_pattern(valid_word, invalid_character))
+        
+    def test_creates_correct_command(self):
+        text = "test"
+        pattern_matcher = create_word_pattern_matcher()
+        command = create_command_from_pattern_matcher(pattern_matcher, text)
+        expected_command = Command('word test', [BasicAction("insert", [text])])
+        assert_commands_match(self, command, expected_command)
 
 class SymbolPatternMatcherTestCase(unittest.TestCase):
     def _create_non_matching_text_list(self):
