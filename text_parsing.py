@@ -44,6 +44,9 @@ class CurrentText:
 
     def acknowledge_that_the_end_of_the_text_has_been_reached(self):
         self.is_current_text_at_end_of_text = True
+    
+    def handle_backtracking_before_end_of_text(self):
+        self.is_current_text_at_end_of_text = False
 
     def __repr__(self):
         return self.__str__()
@@ -149,6 +152,7 @@ class TextParser:
         last_match = self.pattern_manager.get_last_match()
         self.index = last_match.get_text_information().get_index()
         self.text_information.set_index(self.index)
+        self.text_information.handle_backtracking_before_end_of_text()
 
     def handle_match(self):
         command = self.pattern_manager.get_command_from_pattern(self.text_information)

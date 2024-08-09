@@ -22,7 +22,7 @@ def assert_commands_match(assertion_class, actual: Command, expected: Command):
         assertion_class.assertEqual(actual_action, expected_action)
 
 def assert_command_histories_match(assertion_class, actual, expected):
-    assertion_class.assertEqual(len(actual), len(expected))
+    assertion_class.assertEqual(len(actual), len(expected), f"actual: {actual}, expected: {expected}")
     for actual_command, expected_command in zip(actual, expected):
         assert_commands_match(assertion_class, actual_command, expected_command)
 
@@ -126,6 +126,9 @@ def create_z_command():
     action = BasicAction("insert", ["z"])
     return Command('zip', [action])
 
+def create_type_word_test_command():
+    return Command('word test', [BasicAction("insert", ["test"])])
+
 class TextParsingTest(unittest.TestCase):
     def test_handles_symbols_only(self):
         expected_command_history = [create_bang_command(), create_dot_command(), create_question_command()]
@@ -176,12 +179,41 @@ class TextParsingTest(unittest.TestCase):
     
     def test_handles_word_and_letter(self):
         expected_command_history = [
-            Command('word test', [BasicAction("insert", ["test"])]),
+            create_type_word_test_command(),
             create_z_command(),
         ]
         text = "testz"
         command_history = create_command_history_list_from_text(text)
         assert_command_histories_match(self, command_history, expected_command_history)
-        
+
+    def test_handles_letter_and_word(self):
+        expected_command_history = [
+            create_z_command(),
+            create_type_word_test_command(),
+        ]
+        text = "ztest"
+        command_history = create_command_history_list_from_text(text)
+        assert_command_histories_match(self, command_history, expected_command_history)
+    
+    def test_handles_word_letter_and_symbol(self):
+        expected_command_history = [
+            create_type_word_test_command(),
+            create_z_command(),
+            create_bang_command(),
+        ]
+        text = "testz!"
+        command_history = create_command_history_list_from_text(text)
+        assert_command_histories_match(self, command_history, expected_command_history)
+
+    def test_handles_letter_word_and_symbol(self):
+        expected_command_history = [
+            create_z_command(),
+            create_type_word_test_command(),
+            create_bang_command(),
+        ]
+        text = "ztest!"
+        command_history = create_command_history_list_from_text(text)
+        assert_command_histories_match(self, command_history, expected_command_history)
+
 if __name__ == '__main__':
     unittest.main()
