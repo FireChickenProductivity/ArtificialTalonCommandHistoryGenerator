@@ -43,6 +43,13 @@ class CurrentText:
     
     def __str__(self):
         return f"CurrentText(text: {self.text}, next_character: {self.next_character})"
+    
+    def clone(self):
+        current_text = CurrentText()
+        current_text.text = self.text
+        current_text.next_character = self.next_character
+        current_text.index = self.index
+        return current_text
 
 class Match:
     def __init__(self, pattern: PatternMatcher, text_information: CurrentText):
@@ -75,7 +82,6 @@ class PatternManager:
         self.matching_pattern = None
         self.patterns_that_could_match_on_first_character = None
         self.last_match: Match = None
-        self.current_match: Match = None
         self.reset_matching_information()
     
     def has_match(self) -> bool:
@@ -88,10 +94,8 @@ class PatternManager:
         return self.last_match
     
     def get_command_from_pattern(self, text_information: CurrentText) -> Command:
-        pattern = self.matching_pattern
-        if not pattern:
-            pattern = self.last_match.get_pattern()
-            text_information = self.last_match.get_text_information()
+        pattern = self.last_match.get_pattern()
+        text_information = self.last_match.get_text_information()
         command = create_command_from_pattern_matcher(pattern, text_information.compute_total_text())
         return command
 
@@ -104,9 +108,7 @@ class PatternManager:
                                                                  if pattern.could_potentially_belong_to_pattern(text, next_character)]
         for pattern in self.patterns_that_could_match_on_first_character:
             if pattern.does_belong_to_pattern(text, next_character):
-                if self.current_match and (not self.last_match or self.current_match != self.last_match):
-                    self.last_match = self.current_match
-                self.current_match = Match(pattern, text_information)
+                self.last_match = Match(pattern, text_information.clone())
                 self.matching_pattern = pattern
                 return
         self.matching_pattern = None
@@ -120,10 +122,10 @@ class PatternManager:
         return True
     
     def reset_matching_information(self):
+        print('resetting')
         self.matching_pattern = None
         self.patterns_that_could_match_on_first_character = None
         self.last_match = None
-        self.current_match = None
 
     def handle_match(self):
         self.reset_matching_information()
