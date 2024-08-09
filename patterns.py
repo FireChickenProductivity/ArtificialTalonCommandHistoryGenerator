@@ -6,7 +6,7 @@ class PatternMatcher:
     def does_belong_to_pattern(current_match: str, next_character: str) -> bool:
         pass
 
-    def could_potentially_belong_to_pattern(current_match: str, next_character: str) -> bool:
+    def could_potentially_belong_to_pattern(self, current_match: str, next_character: str, is_end_of_text: bool = False) -> bool:
         pass
 
     def get_name(self) -> str:
@@ -23,7 +23,7 @@ class SingleCharacterPatternMatcher(PatternMatcher):
     def does_belong_to_pattern(self, current_match: str, next_character: str) -> bool:
         return len(current_match) == 0 and self.is_valid_character(next_character)
     
-    def could_potentially_belong_to_pattern(self, current_match: str, next_character: str) -> bool:
+    def could_potentially_belong_to_pattern(self, current_match: str, next_character: str, is_end_of_text: bool = False) -> bool:
         return self.does_belong_to_pattern(current_match, next_character)
     
     def get_name(self) -> str:
@@ -38,9 +38,11 @@ class WordPatternMatcher(PatternMatcher):
         total_match = current_match + next_character
         return total_match in self.word_set
     
-    def could_potentially_belong_to_pattern(self, current_match: str, next_character: str) -> bool:
+    def could_potentially_belong_to_pattern(self, current_match: str, next_character: str, is_end_of_text: bool = False) -> bool:
         if self.maximum_word_length < len(current_match) + 1:
             return False
+        if is_end_of_text:
+            return self.does_belong_to_pattern(current_match, next_character)
         total_match = current_match + next_character
         for character in total_match:
             if not (character.isalpha() or character == "'"):

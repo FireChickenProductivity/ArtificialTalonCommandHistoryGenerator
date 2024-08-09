@@ -159,9 +159,7 @@ class TextParsingTest(unittest.TestCase):
             Command('word this', [BasicAction("insert", ["this"])]),
         ]
         text = "testthis"
-        print('testing handles word only')
         command_history = create_command_history_list_from_text(text)
-        print('ending test')
         assert_command_histories_match(self, command_history, expected_command_history)
     
     def test_handles_words_and_symbols(self):

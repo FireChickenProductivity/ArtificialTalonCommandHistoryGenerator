@@ -8,6 +8,7 @@ class CurrentText:
         self.text = ""
         self.next_character = ""
         self.index = -1
+        self.is_current_text_at_end_of_text = False
     
     def append_character(self, character: str):
         if self.next_character: self.text += self.next_character
@@ -37,6 +38,12 @@ class CurrentText:
 
     def get_index(self):
         return self.index
+
+    def is_at_the_end_of_the_text(self):
+        return self.is_current_text_at_end_of_text
+
+    def acknowledge_that_the_end_of_the_text_has_been_reached(self):
+        self.is_current_text_at_end_of_text = True
 
     def __repr__(self):
         return self.__str__()
@@ -116,13 +123,13 @@ class PatternManager:
     def no_pattern_could_potentially_match(self, text_information: CurrentText):
         text = text_information.get_text()
         next_character = text_information.get_next_character()
+        is_end_of_text = text_information.is_at_the_end_of_the_text()
         for pattern in self.patterns:
-            if pattern.could_potentially_belong_to_pattern(text, next_character):
+            if pattern.could_potentially_belong_to_pattern(text, next_character, is_end_of_text):
                 return False
         return True
     
     def reset_matching_information(self):
-        print('resetting')
         self.matching_pattern = None
         self.patterns_that_could_match_on_first_character = None
         self.last_match = None
@@ -140,7 +147,6 @@ class TextParser:
 
     def backtrack(self):
         last_match = self.pattern_manager.get_last_match()
-        print('backtracking', last_match)
         self.index = last_match.get_text_information().get_index()
         self.text_information.set_index(self.index)
 
@@ -162,6 +168,8 @@ class TextParser:
         found_match_to_process = False
         while self.index < len(text):
             self.text_information.append_character(text[self.index])
+            if self.index == len(text) - 1:
+                self.text_information.acknowledge_that_the_end_of_the_text_has_been_reached()
             self.pattern_manager.handle_text_information(self.text_information)
             no_pattern_could_potentially_match = self.pattern_manager.no_pattern_could_potentially_match(self.text_information)
             if self.pattern_manager.has_match():
