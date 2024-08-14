@@ -56,7 +56,31 @@ class WordPatternMatcher(PatternMatcher):
     def get_priority(self) -> int:
         return 1
 
-def separate_potentially_formatted_words_into_tokens(text: str) -> List[str]:
+class NotWordsSmashedTogetherException(Exception): pass
+
+def separate_words_smashed_together(words: str, is_word, current_word_start: int = 0) -> List[str]:
+    words_starting_at_index = []
+    current_word = ""
+    for i in range(current_word_start, len(words)):
+        current_word += words[i]
+        if is_word(current_word):
+            words_starting_at_index.append(i)
+    if words_starting_at_index:
+        for word in words_starting_at_index:
+            ending_index = current_word_start + len(word)
+            if ending_index == len(words):
+                return [word]
+            else:
+                remaining_words = separate_words_smashed_together(words, is_word, ending_index)
+                return [word] + remaining_words
+    else:
+        raise NotWordsSmashedTogetherException
+
+
+class InvalidFormattedWordsTextException(Exception): pass
+
+
+def separate_potentially_formatted_words_into_tokens(text: str, is_word) -> List[str]:
     tokens = []
     current_token = ""
     is_alphabetic_token = False
@@ -71,6 +95,11 @@ def separate_potentially_formatted_words_into_tokens(text: str) -> List[str]:
             current_token = character
             is_alphabetic_token = is_alphabetic_character
     tokens.append(current_token)
+    if len(tokens) == 1 and not is_word(tokens[0]):
+        try:
+            tokens = separate_words_smashed_together(text, is_word)
+        except NotWordsSmashedTogetherException:
+            raise InvalidFormattedWordsTextException
     return tokens
 
 def is_odd_length_list(input_list: List[str]) -> bool:
@@ -91,13 +120,9 @@ class FormattedWordsPatternMatcher(PatternMatcher):
         self.word_pattern_matcher = word_pattern_matcher
     
     def _is_text_a_word(self, text: str) -> bool:
-        return self.word_pattern_matcher.does_belong_to_pattern(text, "")
+        return self.word_pattern_matcher.does_belong_to_pattern(text.lower(), "")
 
-    def does_belong_to_pattern(self, current_match: str, next_character: str) -> bool:
-        tokens = separate_potentially_formatted_words_into_tokens(current_match + next_character)
-        if len(tokens) < 3 or not is_odd_length_list(tokens):
-            return False
-        separator = ""
+    def _do_tokens_belong_to_pattern_with_separator(self, tokens: List[str], separator: str) -> bool:
         expecting_word = True
         for token in tokens:
             if expecting_word and not self._is_text_a_word(token):
@@ -106,15 +131,30 @@ class FormattedWordsPatternMatcher(PatternMatcher):
                 if token not in self.SEPARATORS_TO_FORMATTER_NAME:
                     return False
                 else:
-                    if not separator:
-                        separator = token
                     if token != separator:
                         return False
             expecting_word = not expecting_word
         return True
-    
-        
 
+    def _do_tokens_belong_to_pattern_without_separator(self, tokens: List[str]) -> bool:
+        for token in tokens:
+            if not self._is_text_a_word(token):
+                return False
+        return True
+
+    def does_belong_to_pattern(self, current_match: str, next_character: str) -> bool:
+        try:
+            tokens = separate_potentially_formatted_words_into_tokens(current_match + next_character)
+        except InvalidFormattedWordsTextException:
+            return False
+        if len(tokens) < 2:
+            return False
+        separator = ""
+        if is_odd_length_list(tokens) and not self._is_text_a_word(tokens[1]):
+            separator = tokens[1]
+            return self._do_tokens_belong_to_pattern_with_separator(tokens, separator)
+        else:
+            return self._do_tokens_belong_to_pattern_without_separator(tokens)
 
 def load_words_from_text():
     current_directory = os.path.dirname(__file__)
