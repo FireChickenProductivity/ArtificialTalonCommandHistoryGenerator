@@ -109,13 +109,21 @@ class SymbolPatternMatcherTestCase(unittest.TestCase):
 class FormattedWordsPatternMatcherTestCase(unittest.TestCase):
     def test_rejects_invalid_stuff(self):
         pattern_matcher = create_formatted_words_pattern_matcher()
-        invalid_texts = ["chicken", "chickenl", "chickenl ", "chickenl 1", "chickenl 1\n", "13", "chick13", "2apple", "chicken_chicken_", "chicken!!!!!chicken", "_chicken_chicken", "chicken_chicken-chicken"]
+        invalid_texts = ["chicken", "chickenl", "chickenl ", "chickenl 1", "chickenl 1\n", "13", "chick13", "2apple", "chicken_chicken_", "chicken!!!!!chicken", "_chicken_chicken", "chicken_chicken-chicken",
+                         "chicken_chicken_chicken_chicken_chicken_chicken_chicken_chicken", "chickenchickenchickenchickenchickenchickenchickenchicken", "CHICKEN_chicken", "chickenCHICKEN", 
+                         "chicken_Chicken"]
         for invalid_text in invalid_texts:
             self.assertFalse(pattern_matcher.does_belong_to_pattern(invalid_text[:-1], invalid_text[-1]))
    
     def test_accepts_words_with_separator(self):
         pattern_matcher = create_formatted_words_pattern_matcher()
-        valid_texts = ["chicken_test", "chicken_testing_this", "yet-another-test", "another__test__here", "another/test/a", "another::test", "a.test.with.dots"]
+        valid_texts = ["chicken_test", "chicken_testing_this", "yet-another-test", "another__test__here", "another/test/a", "another::test", "a.test.with.dots", "Chicken_Test"]
+        for valid_text in valid_texts:
+            self.assertTrue(pattern_matcher.does_belong_to_pattern(valid_text[:-1], valid_text[-1]))
+        
+    def test_accepts_words_without_separator(self):
+        pattern_matcher = create_formatted_words_pattern_matcher()
+        valid_texts = ["chickenchicken", "chickenwords"]
         for valid_text in valid_texts:
             self.assertTrue(pattern_matcher.does_belong_to_pattern(valid_text[:-1], valid_text[-1]))
 

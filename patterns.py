@@ -1,6 +1,7 @@
 from typing import Callable
 from typing import List
 from action_records import Command, BasicAction
+from enum import Enum
 import os
 
 class PatternMatcher:
@@ -105,6 +106,51 @@ def separate_potentially_formatted_words_into_tokens(text: str, is_word) -> List
 def is_odd_length_list(input_list: List[str]) -> bool:
     return len(input_list) % 2 == 1
 
+class Casing(Enum):
+    LOWER = 1
+    UPPER = 2
+    CAPITALIZED = 3
+    OTHER = 4
+
+def compute_casing_of_word(word: str) -> Casing:
+    if word.islower():
+        return Casing.LOWER
+    elif word.isupper():
+        return Casing.UPPER
+    elif word[0].isupper() and word[1:].islower():
+        return Casing.CAPITALIZED
+    else:
+        return Casing.OTHER
+
+class CaseFormat(Enum):
+    CAMEL = 1
+    PASCAL = 2
+    ALL_CAPS = 3
+    ALL_LOWER = 4
+    OTHER = 5
+
+def compute_case_format_for_words(words: List[str]) -> CaseFormat:
+    current_guess = None
+    first_casing = compute_casing_of_word(words[0])
+    previous_casing = first_casing
+    for word in words[1:]:
+        current_casing = compute_casing_of_word(word)
+        if current_casing == Casing.OTHER:
+            return CaseFormat.OTHER
+        elif current_casing == Casing.CAPITALIZED:
+            if current_guess == None:
+                current_guess = CaseFormat.PASCAL
+            elif first_casing == Casing.LOWER:
+                current_guess = CaseFormat.CAMEL
+        elif current_casing == Casing.UPPER:
+            current_guess = CaseFormat.ALL_CAPS
+        elif current_casing == Casing.LOWER:
+            current_guess = CaseFormat.ALL_LOWER
+        if current_casing != previous_casing and not (current_casing == Casing.CAPITALIZED and previous_casing == Casing.LOWER and current_guess == CaseFormat.CAMEL):
+            return CaseFormat.OTHER
+        previous_casing = current_casing
+    return current_guess
+
 class FormattedWordsPatternMatcher(PatternMatcher):
     MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE = 7
     SEPARATORS_TO_FORMATTER_NAME = {
@@ -124,6 +170,7 @@ class FormattedWordsPatternMatcher(PatternMatcher):
 
     def _do_tokens_belong_to_pattern_with_separator(self, tokens: List[str], separator: str) -> bool:
         expecting_word = True
+        words = []
         for token in tokens:
             if expecting_word and not self._is_text_a_word(token):
                 return False
@@ -133,10 +180,19 @@ class FormattedWordsPatternMatcher(PatternMatcher):
                 else:
                     if token != separator:
                         return False
+            if expecting_word:
+                words.append(token)
             expecting_word = not expecting_word
+        if len(words) > self.MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE or compute_case_format_for_words(words) in [CaseFormat.OTHER, CaseFormat.CAMEL]:
+            return False
         return True
 
     def _do_tokens_belong_to_pattern_without_separator(self, tokens: List[str]) -> bool:
+        if len(tokens) > self.MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE:
+            return False
+        case_formatting = compute_case_format_for_words(tokens)
+        if case_formatting == CaseFormat.OTHER:
+            return False
         for token in tokens:
             if not self._is_text_a_word(token):
                 return False
