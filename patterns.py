@@ -57,15 +57,13 @@ class WordPatternMatcher(PatternMatcher):
     def get_priority(self) -> int:
         return 1
 
-class NotWordsSmashedTogetherException(Exception): pass
-
 def separate_words_smashed_together(words: str, is_word, current_word_start: int = 0) -> List[str]:
     words_starting_at_index = []
     current_word = ""
     for i in range(current_word_start, len(words)):
         current_word += words[i]
         if is_word(current_word):
-            words_starting_at_index.append(current_word)
+            words_starting_at_index.append(current_word[:])
     if words_starting_at_index:
         for word in words_starting_at_index:
             ending_index = current_word_start + len(word)
@@ -73,9 +71,13 @@ def separate_words_smashed_together(words: str, is_word, current_word_start: int
                 return [word]
             else:
                 remaining_words = separate_words_smashed_together(words, is_word, ending_index)
-                return [word] + remaining_words
+                if remaining_words:
+                    return [word] + remaining_words
+                else:
+                    continue
+        return None
     else:
-        raise NotWordsSmashedTogetherException
+        return None
 
 
 class InvalidFormattedWordsTextException(Exception): pass
@@ -97,9 +99,8 @@ def separate_potentially_formatted_words_into_tokens(text: str, is_word) -> List
             is_alphabetic_token = is_alphabetic_character
     tokens.append(current_token)
     if len(tokens) == 1 and not is_word(tokens[0]):
-        try:
-            tokens = separate_words_smashed_together(text, is_word)
-        except NotWordsSmashedTogetherException:
+        tokens = separate_words_smashed_together(text, is_word)
+        if not tokens:
             raise InvalidFormattedWordsTextException
     return tokens
 

@@ -123,9 +123,11 @@ class FormattedWordsPatternMatcherTestCase(unittest.TestCase):
         
     def test_accepts_words_without_separator(self):
         pattern_matcher = create_formatted_words_pattern_matcher()
-        valid_texts = ["chickenchicken", "chickenwords"]
+        valid_texts = ["chickenchicken", "chickenwords", "wordWords"]
         for valid_text in valid_texts:
+            print('test start')
             self.assertTrue(pattern_matcher.does_belong_to_pattern(valid_text[:-1], valid_text[-1]))
+            print('test ending')
 
 
 def create_bang_command():
