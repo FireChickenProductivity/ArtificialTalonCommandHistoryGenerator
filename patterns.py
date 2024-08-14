@@ -139,15 +139,17 @@ def compute_case_format_for_words(words: List[str]) -> CaseFormat:
         if current_casing == Casing.OTHER:
             return CaseFormat.OTHER
         elif current_casing == Casing.CAPITALIZED:
-            if current_guess == None:
-                current_guess = CaseFormat.PASCAL
-            elif first_casing == Casing.LOWER:
+            if first_casing == Casing.LOWER:
                 current_guess = CaseFormat.CAMEL
+                print("         CAMEL!")
+            elif current_guess == None:
+                current_guess = CaseFormat.PASCAL
         elif current_casing == Casing.UPPER:
             current_guess = CaseFormat.ALL_CAPS
         elif current_casing == Casing.LOWER:
             current_guess = CaseFormat.ALL_LOWER
         if current_casing != previous_casing and not (current_casing == Casing.CAPITALIZED and previous_casing == Casing.LOWER and current_guess == CaseFormat.CAMEL):
+            print("         CASINGS_DID_NOT_MATCH", current_casing, previous_casing, current_guess)
             return CaseFormat.OTHER
         previous_casing = current_casing
     return current_guess
@@ -189,10 +191,13 @@ class FormattedWordsPatternMatcher(PatternMatcher):
         return True
 
     def _do_tokens_belong_to_pattern_without_separator(self, tokens: List[str]) -> bool:
+        print('tokens', tokens)
         if len(tokens) > self.MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE:
+            print('len(tokens) > self.MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE', len(tokens) > self.MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE)
             return False
         case_formatting = compute_case_format_for_words(tokens)
         if case_formatting == CaseFormat.OTHER:
+            print('case_formatting == CaseFormat.OTHER', case_formatting == CaseFormat.OTHER)
             return False
         for token in tokens:
             if not self._is_text_a_word(token):
@@ -203,14 +208,18 @@ class FormattedWordsPatternMatcher(PatternMatcher):
         try:
             tokens = separate_potentially_formatted_words_into_tokens(current_match + next_character, self._is_text_a_word)
         except InvalidFormattedWordsTextException:
+            print('     InvalidFormattedWordsTextException', InvalidFormattedWordsTextException)
             return False
         if len(tokens) < 2:
+            print('     len(tokens) < 2', tokens)
             return False
         separator = ""
         if is_odd_length_list(tokens) and not self._is_text_a_word(tokens[1]):
             separator = tokens[1]
+            print('     Separated')
             return self._do_tokens_belong_to_pattern_with_separator(tokens, separator)
         else:
+            print('     Smashed')
             return self._do_tokens_belong_to_pattern_without_separator(tokens)
 
 def load_words_from_text():
