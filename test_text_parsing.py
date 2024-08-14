@@ -109,7 +109,7 @@ class SymbolPatternMatcherTestCase(unittest.TestCase):
 class FormattedWordsPatternMatcherTestCase(unittest.TestCase):
     def test_rejects_invalid_stuff(self):
         pattern_matcher = create_formatted_words_pattern_matcher()
-        invalid_texts = ["chicken", "chickenl", "chickenl ", "chickenl 1", "chickenl 1\n", "13", "chick13", "2apple", "chicken_chicken_", "chicken!!!!!chicken", "_chicken_chicken"]
+        invalid_texts = ["chicken", "chickenl", "chickenl ", "chickenl 1", "chickenl 1\n", "13", "chick13", "2apple", "chicken_chicken_", "chicken!!!!!chicken", "_chicken_chicken", "chicken_chicken-chicken"]
         for invalid_text in invalid_texts:
             self.assertFalse(pattern_matcher.does_belong_to_pattern(invalid_text[:-1], invalid_text[-1]))
    
