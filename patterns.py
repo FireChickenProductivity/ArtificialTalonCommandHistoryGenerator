@@ -1,4 +1,5 @@
 from typing import Callable
+from typing import List
 from action_records import Command, BasicAction
 import os
 
@@ -54,6 +55,66 @@ class WordPatternMatcher(PatternMatcher):
 
     def get_priority(self) -> int:
         return 1
+
+def separate_potentially_formatted_words_into_tokens(text: str) -> List[str]:
+    tokens = []
+    current_token = ""
+    is_alphabetic_token = False
+    for character in text:
+        if not current_token:
+            is_alphabetic_token = character.isalpha()
+        is_alphabetic_character = character.isalpha()
+        if is_alphabetic_token == is_alphabetic_character:
+            current_token += character
+        else:
+            tokens.append(current_token)
+            current_token = character
+            is_alphabetic_token = is_alphabetic_character
+    tokens.append(current_token)
+    return tokens
+
+def is_odd_length_list(input_list: List[str]) -> bool:
+    return len(input_list) % 2 == 1
+
+class FormattedWordsPatternMatcher(PatternMatcher):
+    MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE = 7
+    SEPARATORS_TO_FORMATTER_NAME = {
+        "-": 'kabab',
+        "_": 'snake',
+        ".": 'dotted',
+        "/": 'conga',
+        "::": 'packed',
+        "__": 'dunder',
+    }
+    """Detects a series of formatted words"""
+    def __init__(self, word_pattern_matcher: WordPatternMatcher):
+        self.word_pattern_matcher = word_pattern_matcher
+    
+    def _is_text_a_word(self, text: str) -> bool:
+        return self.word_pattern_matcher.does_belong_to_pattern(text, "")
+
+    def does_belong_to_pattern(self, current_match: str, next_character: str) -> bool:
+        tokens = separate_potentially_formatted_words_into_tokens(current_match + next_character)
+        if len(tokens) < 3 or not is_odd_length_list(tokens):
+            return False
+        separator = ""
+        expecting_word = True
+        for token in tokens:
+            if expecting_word and not self._is_text_a_word(token):
+                return False
+            if not expecting_word:
+                if token not in self.SEPARATORS_TO_FORMATTER_NAME:
+                    return False
+                else:
+                    if not separator:
+                        separator = token
+                    if token != separator:
+                        return False
+            expecting_word = not expecting_word
+        return True
+    
+        
+
 
 def load_words_from_text():
     current_directory = os.path.dirname(__file__)
