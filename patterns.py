@@ -64,7 +64,7 @@ def separate_words_smashed_together(words: str, is_word, current_word_start: int
     for i in range(current_word_start, len(words)):
         current_word += words[i]
         if is_word(current_word):
-            words_starting_at_index.append(i)
+            words_starting_at_index.append(current_word)
     if words_starting_at_index:
         for word in words_starting_at_index:
             ending_index = current_word_start + len(word)
@@ -144,7 +144,7 @@ class FormattedWordsPatternMatcher(PatternMatcher):
 
     def does_belong_to_pattern(self, current_match: str, next_character: str) -> bool:
         try:
-            tokens = separate_potentially_formatted_words_into_tokens(current_match + next_character)
+            tokens = separate_potentially_formatted_words_into_tokens(current_match + next_character, self._is_text_a_word)
         except InvalidFormattedWordsTextException:
             return False
         if len(tokens) < 2:
@@ -287,6 +287,10 @@ def create_new_line_pattern_matcher():
 
 def create_word_pattern_matcher():
     return WordPatternMatcher(WORDS, MAXIMUM_WORD_LENGTH)
+
+def create_formatted_words_pattern_matcher():
+    word_pattern_matcher = create_word_pattern_matcher()
+    return FormattedWordsPatternMatcher(word_pattern_matcher)
 
 def create_symbol_command(symbol: str):
     action = BasicAction('insert', [symbol])

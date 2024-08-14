@@ -1,5 +1,5 @@
 from patterns import SYMBOLS_TO_SPOKEN_FORM, create_new_line_pattern_matcher, create_symbol_pattern_matcher, create_command_from_pattern_matcher, \
-    create_word_pattern_matcher
+    create_word_pattern_matcher, create_formatted_words_pattern_matcher
 from text_parsing import create_command_history_list_from_text
 from action_records import Command, BasicAction
 import unittest
@@ -105,6 +105,20 @@ class SymbolPatternMatcherTestCase(unittest.TestCase):
         command = create_command_from_pattern_matcher(pattern_matcher, '!')
         assert_command_has_correct_name(self, command, 'bang')
         assert_insert_command_matches_text(self, command, '!')
+
+class FormattedWordsPatternMatcherTestCase(unittest.TestCase):
+    def test_rejects_invalid_stuff(self):
+        pattern_matcher = create_formatted_words_pattern_matcher()
+        invalid_texts = ["chicken", "chickenl", "chickenl ", "chickenl 1", "chickenl 1\n", "13", "chick13", "2apple", "chicken_chicken_", "chicken!!!!!chicken", "_chicken_chicken"]
+        for invalid_text in invalid_texts:
+            self.assertFalse(pattern_matcher.does_belong_to_pattern(invalid_text[:-1], invalid_text[-1]))
+   
+    def test_accepts_words_with_separator(self):
+        pattern_matcher = create_formatted_words_pattern_matcher()
+        valid_texts = ["chicken_test", "chicken_testing_this", "yet-another-test", "another__test__here", "another/test/a", "another::test", "a.test.with.dots"]
+        for valid_text in valid_texts:
+            self.assertTrue(pattern_matcher.does_belong_to_pattern(valid_text[:-1], valid_text[-1]))
+
 
 def create_bang_command():
     action = BasicAction("insert", ["!"])
