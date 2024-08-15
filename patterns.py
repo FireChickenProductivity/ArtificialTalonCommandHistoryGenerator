@@ -246,6 +246,12 @@ class FormattedWordsPatternMatcher(PatternMatcher):
             return self._is_text_a_word(tokens[0])
         return self._do_tokens_belong_to_pattern(tokens[:-1])
 
+    def get_name(self) -> str:
+        return "formatted words"
+    
+    def get_priority(self) -> int:
+        return 2
+
 def load_words_from_text():
     current_directory = os.path.dirname(__file__)
     resources_directory = os.path.join(current_directory, 'resources')
@@ -396,6 +402,34 @@ def create_word_command(total_matching_text: str):
     action = BasicAction('insert', [total_matching_text])
     command_name = "word " + total_matching_text
     command = Command(command_name, [action])
+    return command
+
+def create_formatted_words_command(total_matching_text: str):
+    tokens = separate_potentially_formatted_words_into_tokens(total_matching_text, is_word=lambda x: x in WORDS)
+    separator = ""
+    if tokens[1] in FormattedWordsPatternMatcher.SEPARATORS_TO_FORMATTER_NAME:
+        separator = tokens[1]
+        tokens = tokens[::2]
+    casing = compute_case_format_for_words(tokens)
+    name = ""
+    if casing == CaseFormat.CAMEL:
+        name = "camel "
+    elif casing == CaseFormat.PASCAL:
+        name = "hammer "
+    elif casing == CaseFormat.ALL_CAPS:
+        if separator == "_":
+            name = "constant "
+        else:
+            name = "all caps "
+    elif casing == CaseFormat.ALL_LOWER:
+        name = "all down "
+    if separator and not name == "constant ":
+        if name == "all down ":
+            name = ""
+        name += FormattedWordsPatternMatcher.SEPARATORS_TO_FORMATTER_NAME[separator] + " "
+    name += " ".join(tokens)
+    action = BasicAction('insert', [total_matching_text])
+    command = Command(name, [action])
     return command
 
 NAMES_TO_ACTION_CREATION_FUNCTIONS = {
