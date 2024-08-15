@@ -235,6 +235,7 @@ class FormattedWordsPatternMatcher(PatternMatcher):
         try:
             tokens = separate_potentially_formatted_words_into_tokens(total_text, self._is_text_a_word)
         except InvalidFormattedWordsTextException:
+            #This branch is usually reached by a single series of alphabetic characters with no separator
             return self._could_potentially_be_start_of_word(total_text)
         last_token = tokens[-1]
         if not self._is_token_start_of_separator(last_token) and not self._could_potentially_be_start_of_word(last_token):
