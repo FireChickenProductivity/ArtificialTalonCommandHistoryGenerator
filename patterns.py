@@ -141,7 +141,6 @@ def compute_case_format_for_words(words: List[str]) -> CaseFormat:
         elif current_casing == Casing.CAPITALIZED:
             if first_casing == Casing.LOWER:
                 current_guess = CaseFormat.CAMEL
-                print("         CAMEL!")
             elif current_guess == None:
                 current_guess = CaseFormat.PASCAL
         elif current_casing == Casing.UPPER:
@@ -149,7 +148,6 @@ def compute_case_format_for_words(words: List[str]) -> CaseFormat:
         elif current_casing == Casing.LOWER:
             current_guess = CaseFormat.ALL_LOWER
         if current_casing != previous_casing and not (current_casing == Casing.CAPITALIZED and previous_casing == Casing.LOWER and current_guess == CaseFormat.CAMEL):
-            print("         CASINGS_DID_NOT_MATCH", current_casing, previous_casing, current_guess)
             return CaseFormat.OTHER
         previous_casing = current_casing
     return current_guess
@@ -191,36 +189,61 @@ class FormattedWordsPatternMatcher(PatternMatcher):
         return True
 
     def _do_tokens_belong_to_pattern_without_separator(self, tokens: List[str]) -> bool:
-        print('tokens', tokens)
         if len(tokens) > self.MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE:
-            print('len(tokens) > self.MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE', len(tokens) > self.MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE)
             return False
         case_formatting = compute_case_format_for_words(tokens)
         if case_formatting == CaseFormat.OTHER:
-            print('case_formatting == CaseFormat.OTHER', case_formatting == CaseFormat.OTHER)
             return False
         for token in tokens:
             if not self._is_text_a_word(token):
                 return False
         return True
 
-    def does_belong_to_pattern(self, current_match: str, next_character: str) -> bool:
-        try:
-            tokens = separate_potentially_formatted_words_into_tokens(current_match + next_character, self._is_text_a_word)
-        except InvalidFormattedWordsTextException:
-            print('     InvalidFormattedWordsTextException', InvalidFormattedWordsTextException)
-            return False
+    def _do_tokens_belong_to_pattern(self, tokens: List[str]) -> bool:
         if len(tokens) < 2:
-            print('     len(tokens) < 2', tokens)
             return False
         separator = ""
         if is_odd_length_list(tokens) and not self._is_text_a_word(tokens[1]):
             separator = tokens[1]
-            print('     Separated')
             return self._do_tokens_belong_to_pattern_with_separator(tokens, separator)
         else:
-            print('     Smashed')
             return self._do_tokens_belong_to_pattern_without_separator(tokens)
+
+    def does_belong_to_pattern(self, current_match: str, next_character: str) -> bool:
+        try:
+            tokens = separate_potentially_formatted_words_into_tokens(current_match + next_character, self._is_text_a_word)
+        except InvalidFormattedWordsTextException:
+            return False
+        return self._do_tokens_belong_to_pattern(tokens)
+
+    def _is_token_start_of_separator(self, token: str) -> bool:
+        for separator in self.SEPARATORS_TO_FORMATTER_NAME:
+            if separator.startswith(token):
+                return True
+        return False
+
+    def _could_final_token_potentially_belong_to_pattern(self, last_token: str) -> bool:
+        return self._is_token_start_of_separator(last_token) or self.word_pattern_matcher.could_potentially_belong_to_pattern(last_token[:-1], last_token[-1])
+
+    def _could_potentially_be_start_of_word(self, text: str) -> bool:
+        return self.word_pattern_matcher.could_potentially_belong_to_pattern(text[:-1], text[-1])
+
+    def could_potentially_belong_to_pattern(self, current_match: str, next_character: str, is_end_of_text: bool = False) -> bool:
+        total_text = current_match + next_character
+        if is_end_of_text:
+            return self.does_belong_to_pattern(current_match, next_character)
+        try:
+            tokens = separate_potentially_formatted_words_into_tokens(total_text, self._is_text_a_word)
+        except InvalidFormattedWordsTextException:
+            return self._could_potentially_be_start_of_word(total_text)
+        last_token = tokens[-1]
+        if not self._is_token_start_of_separator(last_token) and not self._could_potentially_be_start_of_word(last_token):
+            return False
+        if len(tokens) == 1:
+            return True 
+        if len(tokens) == 2:
+            return self._is_text_a_word(tokens[0])
+        return self._do_tokens_belong_to_pattern(tokens[:-1])
 
 def load_words_from_text():
     current_directory = os.path.dirname(__file__)

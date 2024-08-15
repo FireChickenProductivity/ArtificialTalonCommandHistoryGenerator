@@ -125,10 +125,22 @@ class FormattedWordsPatternMatcherTestCase(unittest.TestCase):
         pattern_matcher = create_formatted_words_pattern_matcher()
         valid_texts = ["chickenchicken", "chickenwords", "WordWords", "CHICKENWORDS", "pizzaPizza"]
         for valid_text in valid_texts:
-            print('test start', valid_text)
             self.assertTrue(pattern_matcher.does_belong_to_pattern(valid_text[:-1], valid_text[-1]))
-            print('test ending')
 
+    def test_rejects_stuff_that_could_not_potentially_match(self):
+        pattern_matcher = create_formatted_words_pattern_matcher()
+        invalid_texts = ["1", " ", "?", "zrrr_chicken", "chicken_9", "word?chicken", "test?", "_", "-"]
+        for invalid_text in invalid_texts:
+            self.assertFalse(pattern_matcher.could_potentially_belong_to_pattern(invalid_text[:-1], invalid_text[-1]))
+
+    def test_accepts_stuff_that_could_potentially_match(self):
+        pattern_matcher = create_formatted_words_pattern_matcher()
+        valid_texts = ["abbb",
+        ]
+        for valid_text in valid_texts:
+            print('testing', 'test_', "test_abbb", "abbb", "testabbb", "test_test_", "test:")
+            self.assertTrue(pattern_matcher.could_potentially_belong_to_pattern(valid_text[:-1], valid_text[-1]))
+            print('done')
 
 def create_bang_command():
     action = BasicAction("insert", ["!"])
