@@ -192,10 +192,9 @@ class TextParsingTest(unittest.TestCase):
         command_history = create_command_history_list_from_text(text)
         assert_command_histories_match(self, command_history, expected_command_history)
     
-    def test_handles_words_only(self):
+    def test_handles_smash(self):
         expected_command_history = [
-            Command('word test', [BasicAction("insert", ["test"])]),
-            Command('word this', [BasicAction("insert", ["this"])]),
+            Command('smash test this', [BasicAction("insert", ["testthis"])]),
         ]
         text = "testthis"
         command_history = create_command_history_list_from_text(text)

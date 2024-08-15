@@ -65,7 +65,8 @@ def separate_words_smashed_together(words: str, is_word, current_word_start: int
         if is_word(current_word):
             words_starting_at_index.append(current_word[:])
     if words_starting_at_index:
-        for word in words_starting_at_index:
+        for i in range(len(words_starting_at_index) - 1, -1, -1):
+            word = words_starting_at_index[i]
             ending_index = current_word_start + len(word)
             if ending_index == len(words):
                 return [word]
@@ -422,9 +423,10 @@ def create_formatted_words_command(total_matching_text: str):
         else:
             name = "all caps "
     elif casing == CaseFormat.ALL_LOWER:
-        name = "all down "
+        name = "smash "
+
     if separator and not name == "constant ":
-        if name == "all down ":
+        if name == "smash ":
             name = ""
         name += FormattedWordsPatternMatcher.SEPARATORS_TO_FORMATTER_NAME[separator] + " "
     name += " ".join(tokens)
@@ -435,7 +437,8 @@ def create_formatted_words_command(total_matching_text: str):
 NAMES_TO_ACTION_CREATION_FUNCTIONS = {
     "symbol": create_symbol_command,
     "new line": create_new_line_command,
-    "word": create_word_command
+    "word": create_word_command,
+    "formatted words": create_formatted_words_command,
 }
 
 def create_command_from_pattern_matcher(pattern_matcher: PatternMatcher, total_matching_text: str) -> Command:
