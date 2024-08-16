@@ -167,6 +167,10 @@ def create_z_command():
 def create_type_word_test_command():
     return Command('word test', [BasicAction("insert", ["test"])])
 
+def create_insert_command(utterance: str, text: str):
+    action = BasicAction("insert", [text])
+    return Command(utterance, [action])
+
 class TextParsingTest(unittest.TestCase):
     def test_handles_symbols_only(self):
         expected_command_history = [create_bang_command(), create_dot_command(), create_question_command()]
@@ -290,6 +294,16 @@ class TextParsingTest(unittest.TestCase):
         ]
         text = "testThisMore"
         assert_command_history_matches_that_for_text(self, expected_command_history, text)
+    
+    def test_handles_pascal_case(self):
+        words = ["is", "another", "test"]
+        utterance = "hammer this"
+        text ="This"
+        for word in words:
+            utterance += " " + word
+            text += word.capitalize()
+            insert_command = create_insert_command(utterance, text)
+            assert_command_history_matches_that_for_text(self, [insert_command], text)
 
 if __name__ == '__main__':
     unittest.main()
