@@ -26,6 +26,10 @@ def assert_command_histories_match(assertion_class, actual, expected):
     for actual_command, expected_command in zip(actual, expected):
         assert_commands_match(assertion_class, actual_command, expected_command)
 
+def assert_command_history_matches_that_for_text(assertion_class, expected_history, text):
+    actual_history = create_command_history_list_from_text(text)
+    assert_command_histories_match(assertion_class, actual_history, expected_history)
+
 class NewLinePatternMatcherTestCase(unittest.TestCase):
     def _create_non_matching_text_list(self):
         return ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', ' ']
@@ -257,6 +261,26 @@ class TextParsingTest(unittest.TestCase):
         command_history = create_command_history_list_from_text(text)
         print('ending')
         assert_command_histories_match(self, command_history, expected_command_history)
+
+    def test_handles_extended_snake_case(self):
+        expected_command_history = [
+            Command('snake test this more', [BasicAction("insert", ["test_this_more"])]),
+        ]
+        text = "test_this_more"
+        assert_command_history_matches_that_for_text(self, expected_command_history, text)
+        expected_command_history = [
+            Command('snake test this even more', [BasicAction("insert", ["test_this_even_more"])]),
+        ]
+        text = "test_this_even_more"
+        assert_command_history_matches_that_for_text(self, expected_command_history, text)
+        expected_command_history = [
+            Command('snake test this even more', [BasicAction("insert", ["test_this_even_more"])]),
+            Command("underscore", [BasicAction("insert", ["_"])]),
+            Command("zip", [BasicAction("insert", ["z"])]),
+        ]
+        text = "test_this_even_more_z"
+        assert_command_history_matches_that_for_text(self, expected_command_history, text)
+
 
 if __name__ == '__main__':
     unittest.main()
