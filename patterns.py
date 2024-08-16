@@ -444,7 +444,7 @@ def create_formatted_words_command(total_matching_text: str):
         name += FormattedWordsPatternMatcher.SEPARATORS_TO_FORMATTER_NAME[separator] + " "
     name += " ".join(tokens)
     action = BasicAction('insert', [total_matching_text])
-    command = Command(name, [action])
+    command = Command(name.lower(), [action])
     return command
 
 NAMES_TO_ACTION_CREATION_FUNCTIONS = {
