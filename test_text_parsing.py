@@ -138,9 +138,7 @@ class FormattedWordsPatternMatcherTestCase(unittest.TestCase):
         valid_texts = ["abbb",
         ]
         for valid_text in valid_texts:
-            print('testing', 'test_', "test_abbb", "abbb", "testabbb", "test_test_", "test:")
             self.assertTrue(pattern_matcher.could_potentially_belong_to_pattern(valid_text[:-1], valid_text[-1]))
-            print('done')
 
 def create_bang_command():
     action = BasicAction("insert", ["!"])
@@ -248,6 +246,16 @@ class TextParsingTest(unittest.TestCase):
         ]
         text = "ztest!"
         command_history = create_command_history_list_from_text(text)
+        assert_command_histories_match(self, command_history, expected_command_history)
+    
+    def test_handles_snake_case(self):
+        expected_command_history = [
+            Command('snake test this', [BasicAction("insert", ["test_this"])]),
+        ]
+        text = "test_this"
+        print('starting')
+        command_history = create_command_history_list_from_text(text)
+        print('ending')
         assert_command_histories_match(self, command_history, expected_command_history)
 
 if __name__ == '__main__':
