@@ -257,9 +257,7 @@ class TextParsingTest(unittest.TestCase):
             Command('snake test this', [BasicAction("insert", ["test_this"])]),
         ]
         text = "test_this"
-        print('starting')
         command_history = create_command_history_list_from_text(text)
-        print('ending')
         assert_command_histories_match(self, command_history, expected_command_history)
 
     def test_handles_extended_snake_case(self):

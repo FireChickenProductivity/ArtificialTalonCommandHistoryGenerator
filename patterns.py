@@ -419,7 +419,7 @@ def create_word_command(total_matching_text: str):
     return command
 
 def create_formatted_words_command(total_matching_text: str):
-    tokens = separate_potentially_formatted_words_into_tokens(total_matching_text, is_word=lambda x: x in WORDS)
+    tokens = separate_potentially_formatted_words_into_tokens(total_matching_text, is_word=lambda x: x.lower() in WORDS)
     separator = ""
     if tokens[1] in FormattedWordsPatternMatcher.SEPARATORS_TO_FORMATTER_NAME:
         separator = tokens[1]
