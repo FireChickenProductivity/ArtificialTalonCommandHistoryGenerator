@@ -284,8 +284,12 @@ class TextParsingTest(unittest.TestCase):
             Command('camel test this', [BasicAction("insert", ["testThis"])]),
         ]
         text = "testThis"
-        command_history = create_command_history_list_from_text(text)
-        assert_command_histories_match(self, command_history, expected_command_history)
+        assert_command_history_matches_that_for_text(self, expected_command_history, text)
+        expected_command_history = [
+            Command('camel test this more', [BasicAction("insert", ["testThisMore"])]),
+        ]
+        text = "testThisMore"
+        assert_command_history_matches_that_for_text(self, expected_command_history, text)
 
 if __name__ == '__main__':
     unittest.main()
