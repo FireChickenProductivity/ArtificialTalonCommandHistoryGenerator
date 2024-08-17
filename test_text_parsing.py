@@ -178,6 +178,13 @@ class FormattedWordPatternMatcherTest(unittest.TestCase):
         next_character = "d"
         result = pattern_matcher.does_belong_to_pattern(start, next_character)
         self.assertTrue(result)
+    
+    def test_matches_fully_capitalized_word(self):
+        pattern_matcher = create_formatted_word_pattern_matcher()
+        start = "WOR"
+        next_character = "D"
+        result = pattern_matcher.does_belong_to_pattern(start, next_character)
+        self.assertTrue(result)
 
 class TextParsingTest(unittest.TestCase):
     def test_handles_symbols_only(self):
@@ -354,6 +361,11 @@ class TextParsingTest(unittest.TestCase):
         command = create_insert_command("proud word", text)
         command_history = [command]
         assert_command_history_matches_that_for_text(self, command_history, text)
+        text = "WORD"
+        command = create_insert_command("all cap word", text)
+        command_history = [command]
+        assert_command_history_matches_that_for_text(self, command_history, text)
+
 
 if __name__ == '__main__':
     unittest.main()
