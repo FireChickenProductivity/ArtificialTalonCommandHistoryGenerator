@@ -340,6 +340,12 @@ class TextParsingTest(unittest.TestCase):
         command = create_insert_command("snake this is a test", text)
         command_history = [command]
         assert_command_history_matches_that_for_text(self, command_history, text)
+    
+    def test_handles_formatted_words_only(self):
+        text = "Word"
+        command = create_insert_command("proud word", text)
+        command_history = [command]
+        assert_command_history_matches_that_for_text(self, command_history, text)
 
 if __name__ == '__main__':
     unittest.main()

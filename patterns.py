@@ -238,27 +238,22 @@ class FormattedWordsPatternMatcher(PatternMatcher):
             tokens = separate_potentially_formatted_words_into_tokens(total_text, self._is_text_a_word)
         except InvalidFormattedWordsTextException:
             #This branch is usually reached by a single series of alphabetic characters with no separator
-            print('     InvalidFormattedWordsTextException', total_text)
             return self._could_potentially_be_start_of_word(total_text)
         last_token = tokens[-1]
         is_last_token_separator = self._is_token_start_of_separator(last_token)
         if not is_last_token_separator and not self._could_potentially_be_start_of_word(last_token):
-            print('    Could not be start of word or separator', last_token)
             return False
         if len(tokens) == 1:
             return True 
         if len(tokens) == 2:
-            print('     self._is_text_a_word(tokens[0])', self._is_text_a_word(tokens[0]), tokens[0], total_text, tokens)
             return self._is_text_a_word(tokens[0])
         presumably_properly_formed_formatted_words_ending_index = len(tokens) - 1
         if not is_last_token_separator:
             if not tokens[-2] in self.SEPARATORS_TO_FORMATTER_NAME:
-                print('tokens not found')
                 return False
             presumably_properly_formed_formatted_words_ending_index -= 1
         if presumably_properly_formed_formatted_words_ending_index == 1:
             return self._is_text_a_word(tokens[0])
-        print('     self._do_tokens_belong_to_pattern(tokens[:presumably_properly_formed_formatted_words_ending_index])', self._do_tokens_belong_to_pattern(tokens[:presumably_properly_formed_formatted_words_ending_index]), total_text)
         return self._do_tokens_belong_to_pattern(tokens[:presumably_properly_formed_formatted_words_ending_index])
 
     def get_name(self) -> str:
@@ -485,7 +480,7 @@ def create_formatted_word_command(total_matching_text: str):
     name = "all cap"
     if total_matching_text[-1].islower():
         name = "proud"
-    command = create_insert_command(name, total_matching_text)
+    command = create_insert_command(name + " " + total_matching_text.lower(), total_matching_text)
     return command
 
 NAMES_TO_ACTION_CREATION_FUNCTIONS = {
