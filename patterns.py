@@ -153,8 +153,9 @@ def compute_case_format_for_words(words: List[str]) -> CaseFormat:
         previous_casing = current_casing
     return current_guess
 
+MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE = 7
+
 class FormattedWordsPatternMatcher(PatternMatcher):
-    MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE = 7
     SEPARATORS_TO_FORMATTER_NAME = {
         "-": 'kabab',
         "_": 'snake',
@@ -185,12 +186,12 @@ class FormattedWordsPatternMatcher(PatternMatcher):
             if expecting_word:
                 words.append(token)
             expecting_word = not expecting_word
-        if len(words) > self.MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE or compute_case_format_for_words(words) in [CaseFormat.OTHER, CaseFormat.CAMEL]:
+        if len(words) > MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE or compute_case_format_for_words(words) in [CaseFormat.OTHER, CaseFormat.CAMEL]:
             return False
         return True
 
     def _do_tokens_belong_to_pattern_without_separator(self, tokens: List[str]) -> bool:
-        if len(tokens) > self.MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE:
+        if len(tokens) > MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE:
             return False
         case_formatting = compute_case_format_for_words(tokens)
         if case_formatting == CaseFormat.OTHER:
