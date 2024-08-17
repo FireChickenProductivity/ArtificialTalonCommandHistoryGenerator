@@ -185,6 +185,15 @@ class FormattedWordPatternMatcherTest(unittest.TestCase):
         next_character = "D"
         result = pattern_matcher.does_belong_to_pattern(start, next_character)
         self.assertTrue(result)
+    
+    def test_rejects_invalid_stuff(self):
+        invalid_stuff = ["word", "9", "Chicken9", "ChICken", "CHICKeN"]
+        pattern_matcher = create_formatted_word_pattern_matcher()
+        for text in invalid_stuff:
+            current_text = text[:-1]
+            next_character = text[-1]
+            self.assertFalse(pattern_matcher.could_potentially_belong_to_pattern(current_text, next_character))
+            self.assertFalse(pattern_matcher.does_belong_to_pattern(current_text, next_character))
 
 class TextParsingTest(unittest.TestCase):
     def test_handles_symbols_only(self):
