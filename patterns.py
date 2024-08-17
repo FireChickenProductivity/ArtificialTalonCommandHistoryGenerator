@@ -5,7 +5,7 @@ from enum import Enum
 import os
 
 class PatternMatcher:
-    def does_belong_to_pattern(current_match: str, next_character: str) -> bool:
+    def does_belong_to_pattern(self, current_match: str, next_character: str) -> bool:
         pass
 
     def could_potentially_belong_to_pattern(self, current_match: str, next_character: str, is_end_of_text: bool = False) -> bool:
@@ -267,6 +267,30 @@ class FormattedWordsPatternMatcher(PatternMatcher):
     def get_priority(self) -> int:
         return 2
 
+class FormattedWordPatternMatcher:
+    def __init__(self, word_pattern_matcher: WordPatternMatcher):
+        self.word_pattern_matcher = word_pattern_matcher
+    
+    def _does_text_have_valid_case(self, text: str) -> bool:
+        return text.isupper or text == text.capitalize
+
+    def _is_current_match_word(self, current_match: str, next_character: str) -> bool:
+        self.word_pattern_matcher.does_belong_to_pattern(current_match.lower(), next_character.lower())
+
+    def does_belong_to_pattern(self, current_match: str, next_character: str) -> bool:
+        total_text = current_match + next_character
+        return self._does_text_have_valid_case(total_text) and self._is_current_match_word(current_match, next_character)
+    
+    def could_potentially_belong_to_pattern(self, current_match: str, next_character: str, is_end_of_text: bool = False) -> bool:
+        total_text = current_match + next_character
+        return self._does_text_have_valid_case(total_text) and self.word_pattern_matcher.could_potentially_belong_to_pattern(current_match.lower(), next_character.lower(), is_end_of_text)
+
+    def get_name(self) -> str:
+        return "formatted word"
+
+    def get_priority(self) -> int:
+        return 1
+
 def load_words_from_text():
     current_directory = os.path.dirname(__file__)
     resources_directory = os.path.join(current_directory, 'resources')
@@ -384,6 +408,11 @@ SYMBOLS_TO_SPOKEN_FORM = {
     " ": "space",
 }
 
+def create_insert_command(name: str, text: str):
+    action = BasicAction("insert", [text])
+    command = Command(name, [action])
+    return command
+
 def create_symbol_pattern_matcher():
     def is_valid_character(character: str) -> bool:
         return character in SYMBOLS_TO_SPOKEN_FORM
@@ -402,6 +431,10 @@ def create_word_pattern_matcher():
 def create_formatted_words_pattern_matcher():
     word_pattern_matcher = create_word_pattern_matcher()
     return FormattedWordsPatternMatcher(word_pattern_matcher)
+
+def create_formatted_word_pattern_matcher():
+    word_pattern_matcher = create_word_pattern_matcher()
+    return FormattedWordPatternMatcher(word_pattern_matcher)
 
 def create_symbol_command(symbol: str):
     action = BasicAction('insert', [symbol])
@@ -448,11 +481,19 @@ def create_formatted_words_command(total_matching_text: str):
     command = Command(name.lower(), [action])
     return command
 
+def create_formatted_word_command(total_matching_text: str):
+    name = "all cap"
+    if total_matching_text[-1].islower():
+        name = "proud"
+    command = create_insert_command(name, total_matching_text)
+    return command
+
 NAMES_TO_ACTION_CREATION_FUNCTIONS = {
     "symbol": create_symbol_command,
     "new line": create_new_line_command,
     "word": create_word_command,
     "formatted words": create_formatted_words_command,
+    "formatted word": create_formatted_word_command,
 }
 
 def create_command_from_pattern_matcher(pattern_matcher: PatternMatcher, total_matching_text: str) -> Command:
