@@ -304,6 +304,16 @@ class TextParsingTest(unittest.TestCase):
             text += word.capitalize()
             insert_command = create_insert_command(utterance, text)
             assert_command_history_matches_that_for_text(self, [insert_command], text)
+        
+    def test_handles_kabab_case(self):
+        words = ["is", "another", "test"]
+        utterance = "kabab this"
+        text ="this"
+        for word in words:
+            utterance += " " + word
+            text += "-" + word
+            insert_command = create_insert_command(utterance, text)
+            assert_command_history_matches_that_for_text(self, [insert_command], text)
 
 if __name__ == '__main__':
     unittest.main()
