@@ -325,7 +325,15 @@ class TextParsingTest(unittest.TestCase):
             insert_command = create_insert_command(utterance, text)
             assert_command_history_matches_that_for_text(self, [insert_command], text)
 
-    
+    def test_all_kabab_case(self):
+        words = ["is", "another", "test"]
+        utterance = "all cap kabab this"
+        text ="THIS"
+        for word in words:
+            utterance += " " + word
+            text += "-" + word.upper()
+            insert_command = create_insert_command(utterance, text)
+            assert_command_history_matches_that_for_text(self, [insert_command], text)
 
 if __name__ == '__main__':
     unittest.main()

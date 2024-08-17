@@ -434,7 +434,7 @@ def create_formatted_words_command(total_matching_text: str):
         if separator == "_":
             name = "constant "
         else:
-            name = "all caps "
+            name = "all cap "
     elif casing == CaseFormat.ALL_LOWER:
         name = "smash "
 
