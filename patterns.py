@@ -274,7 +274,6 @@ class FormattedWordPatternMatcher:
 
     def does_belong_to_pattern(self, current_match: str, next_character: str) -> bool:
         total_text = current_match + next_character
-        print(self._does_text_have_valid_case(total_text), total_text, "does belong", self._is_current_match_word(current_match, next_character))
         return self._does_text_have_valid_case(total_text) and self._is_current_match_word(current_match, next_character)
     
     def could_potentially_belong_to_pattern(self, current_match: str, next_character: str, is_end_of_text: bool = False) -> bool:

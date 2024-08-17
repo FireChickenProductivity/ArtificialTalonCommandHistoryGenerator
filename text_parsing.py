@@ -132,7 +132,6 @@ class PatternManager:
         for pattern in self.patterns:
             if pattern.could_potentially_belong_to_pattern(text, next_character, is_end_of_text):
                 return False
-        print('nothing could potentially match', text_information)
         return True
     
     def reset_matching_information(self):
