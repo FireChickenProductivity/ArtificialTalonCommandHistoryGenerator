@@ -1,5 +1,5 @@
 from patterns import SYMBOLS_TO_SPOKEN_FORM, create_new_line_pattern_matcher, create_symbol_pattern_matcher, create_command_from_pattern_matcher, \
-    create_word_pattern_matcher, create_formatted_words_pattern_matcher
+    create_word_pattern_matcher, create_formatted_words_pattern_matcher, create_formatted_word_pattern_matcher
 from text_parsing import create_command_history_list_from_text
 from action_records import Command, BasicAction
 import unittest
@@ -170,6 +170,14 @@ def create_type_word_test_command():
 def create_insert_command(utterance: str, text: str):
     action = BasicAction("insert", [text])
     return Command(utterance, [action])
+
+class FormattedWordPatternMatcherTest(unittest.TestCase):
+    def test_matches_capitalized_word(self):
+        pattern_matcher = create_formatted_word_pattern_matcher()
+        start = "Wor"
+        next_character = "d"
+        result = pattern_matcher.does_belong_to_pattern(start, next_character)
+        self.assertTrue(result)
 
 class TextParsingTest(unittest.TestCase):
     def test_handles_symbols_only(self):

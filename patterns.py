@@ -267,13 +267,14 @@ class FormattedWordPatternMatcher:
         self.word_pattern_matcher = word_pattern_matcher
     
     def _does_text_have_valid_case(self, text: str) -> bool:
-        return text.isupper or text == text.capitalize
+        return text.isupper() or text == text.capitalize()
 
     def _is_current_match_word(self, current_match: str, next_character: str) -> bool:
-        self.word_pattern_matcher.does_belong_to_pattern(current_match.lower(), next_character.lower())
+        return self.word_pattern_matcher.does_belong_to_pattern(current_match.lower(), next_character.lower())
 
     def does_belong_to_pattern(self, current_match: str, next_character: str) -> bool:
         total_text = current_match + next_character
+        print(self._does_text_have_valid_case(total_text), total_text, "does belong", self._is_current_match_word(current_match, next_character))
         return self._does_text_have_valid_case(total_text) and self._is_current_match_word(current_match, next_character)
     
     def could_potentially_belong_to_pattern(self, current_match: str, next_character: str, is_end_of_text: bool = False) -> bool:
