@@ -326,8 +326,39 @@ def is_valid_prose_token(token: str, is_a_word: Callable[[str], bool]):
         is_every_punctuation_character_supported_by_prose_commands(punctuation) \
         and does_word_have_valid_prose_case(alphabetic_characters)
 
+def are_tokens_valid_prose_tokens(tokens: List[str], is_a_word: Callable[[str], bool]):
+    for token in tokens:
+        if not is_valid_prose_token(token, is_a_word):
+            return False
+    return True
+
 class ProsePatternMatcher(PatternMatcher):
-    pass
+    def __init__(self, word_pattern_matcher: WordPatternMatcher):
+        self.word_pattern_matcher = word_pattern_matcher
+
+    def does_belong_to_pattern(self, current_match: str, next_character: str) -> bool:
+        total_text = current_match + next_character
+        tokens = total_text.split(" ")
+        return are_tokens_valid_prose_tokens(tokens, self.word_pattern_matcher.does_belong_to_pattern)
+
+    def could_potentially_belong_to_pattern(self, current_match: str, next_character: str, is_end_of_text: bool = False) -> bool:
+        total_text = current_match + next_character
+        tokens = total_text.split(" ")
+        if len(tokens) > 1 and not are_tokens_valid_prose_tokens(tokens[:-1], self.word_pattern_matcher.does_belong_to_pattern):
+            return False
+        last_token = tokens[-1]
+        alphabetic_characters, punctuation = compute_alphabetic_characters_and_punctuation_for_prose_token(last_token)
+        if punctuation and not is_every_punctuation_character_supported_by_prose_commands(punctuation):
+            return False
+        return alphabetic_characters and \
+            self.word_pattern_matcher.could_potentially_belong_to_pattern(alphabetic_characters[:-1], alphabetic_characters[-1], is_end_of_text) \
+            and does_word_have_valid_prose_case(alphabetic_characters)
+
+    def get_name(self) -> str:
+        return "prose"
+
+    def get_priority(self) -> int:
+        return 3
 
 def load_words_from_text():
     current_directory = os.path.dirname(__file__)
