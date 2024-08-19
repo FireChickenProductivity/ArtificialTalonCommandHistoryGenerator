@@ -286,6 +286,45 @@ class FormattedWordPatternMatcher(PatternMatcher):
     def get_priority(self) -> int:
         return 1
 
+def compute_alphabetic_characters_and_punctuation_for_prose_token(token: str):
+    final_alphabetic_index = 0
+    for i in range(len(token) - 1, -1, -1):
+        if token[i].isalpha():
+            final_alphabetic_index = i
+            break
+    alphabetic_characters = token[:final_alphabetic_index + 1]
+    punctuation = token[final_alphabetic_index + 1:]
+    return alphabetic_characters, punctuation
+
+PUNCTUATION_MARKS_TO_NAME = {
+        ".": "period",
+        "?": "question mark",
+        "!": "exclamation mark",
+        ",": "comma",
+        ";": "semicolon",
+        ":": "colon",
+    }
+
+def does_word_have_valid_prose_case(word: str):
+    word_case = compute_casing_of_word(word)
+    return word_case in [Casing.LOWER, Casing.CAPITALIZED]
+
+def is_every_punctuation_character_supported_by_prose_commands(punctuation_characters: str):
+    for punctuation_character in punctuation_characters:
+        if not punctuation_character in PUNCTUATION_MARKS_TO_NAME:
+            return False
+    return True
+
+def is_valid_prose_token(token: str, is_a_word: Callable[[str], bool]):
+    """Determines of a token could have come from a prose command.
+        This requires that the token starts with a word and optionally
+        ends with punctuation. The word must also have an appropriate formatting.
+    """
+    reached_the_end_of_the_alphabetic_characters = False
+    alphabetic_characters, punctuation = compute_alphabetic_characters_and_punctuation_for_prose_token(token)
+    return is_a_word(alphabetic_characters) and \
+        is_every_punctuation_character_supported_by_prose_commands(punctuation) \
+        and does_word_have_valid_prose_case(alphabetic_characters)
 
 class ProsePatternMatcher(PatternMatcher):
     pass
