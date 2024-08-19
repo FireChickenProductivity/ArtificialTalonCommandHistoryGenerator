@@ -262,7 +262,7 @@ class FormattedWordsPatternMatcher(PatternMatcher):
     def get_priority(self) -> int:
         return 2
 
-class FormattedWordPatternMatcher:
+class FormattedWordPatternMatcher(PatternMatcher):
     def __init__(self, word_pattern_matcher: WordPatternMatcher):
         self.word_pattern_matcher = word_pattern_matcher
     
@@ -285,6 +285,10 @@ class FormattedWordPatternMatcher:
 
     def get_priority(self) -> int:
         return 1
+
+
+class ProsePatternMatcher(PatternMatcher):
+    pass
 
 def load_words_from_text():
     current_directory = os.path.dirname(__file__)
