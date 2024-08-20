@@ -1,5 +1,5 @@
 from patterns import SYMBOLS_TO_SPOKEN_FORM, create_new_line_pattern_matcher, create_symbol_pattern_matcher, create_command_from_pattern_matcher, \
-    create_word_pattern_matcher, create_formatted_words_pattern_matcher, create_formatted_word_pattern_matcher
+    create_word_pattern_matcher, create_formatted_words_pattern_matcher, create_formatted_word_pattern_matcher, create_prose_pattern_matcher
 from text_parsing import create_command_history_list_from_text
 from action_records import Command, BasicAction
 import unittest
@@ -29,6 +29,17 @@ def assert_command_histories_match(assertion_class, actual, expected):
 def assert_command_history_matches_that_for_text(assertion_class, expected_history, text):
     actual_history = create_command_history_list_from_text(text)
     assert_command_histories_match(assertion_class, actual_history, expected_history)
+
+def assert_pattern_matcher_match_outcome_is_expected(assertion_class, pattern_matcher, text, expected_outcome):
+    actual_outcome = pattern_matcher.does_belong_to_pattern(text[:-1], text[-1])
+    assertion_class.assertEqual(actual_outcome, expected_outcome)
+
+def assert_pattern_matcher_matches_text(assertion_class, pattern_matcher, text):
+    assert_pattern_matcher_match_outcome_is_expected(assertion_class, pattern_matcher, text, True)
+
+def assert_pattern_matcher_does_not_match_text(assertion_class, pattern_matcher, text):
+    assert_pattern_matcher_match_outcome_is_expected(assertion_class, pattern_matcher, text, False)
+
 
 class NewLinePatternMatcherTestCase(unittest.TestCase):
     def _create_non_matching_text_list(self):
@@ -143,6 +154,68 @@ class FormattedWordsPatternMatcherTestCase(unittest.TestCase):
         ]
         for valid_text in valid_texts:
             self.assertTrue(pattern_matcher.could_potentially_belong_to_pattern(valid_text[:-1], valid_text[-1]))
+
+class ProsePatternMatcherTestCase(unittest.TestCase):
+    def _assert_text_match_outcome_is_expected(self, text, expected_outcome):
+        pattern_matcher = create_prose_pattern_matcher()
+        assert_pattern_matcher_match_outcome_is_expected(self, pattern_matcher, text, expected_outcome)
+    
+    def _assert_text_match_outcomes_are_expected(self, texts, expected_outcome):
+        for text in texts:
+            self._assert_text_match_outcome_is_expected(text, expected_outcome)
+
+    def _assert_text_matches(self, text):
+        self._assert_text_match_outcome_is_expected(text, True)
+    
+    def _assert_text_does_not_match(self, text):
+        self._assert_text_match_outcome_is_expected(text, False)
+
+    def test_rejects_single_token(self):
+        tokens = ["chicken", "chicken."]
+        self._assert_text_match_outcomes_are_expected(tokens, False)
+
+    def test_accepts_simple_prose(self):
+        text = "chicken chicken, chicken. Chicken"
+        self._assert_text_matches(text)
+    
+    def test_rejects_invalid_case(self):
+        texts = ["CHICKEN CHICKEN", "chicken CHICKEN", "CHICKEN chicken", "this is some tExt"]
+        self._assert_text_match_outcomes_are_expected(texts, False)
+    
+    def test_accepts_with_no_punctuation(self):
+        pattern_matcher = create_prose_pattern_matcher()
+        text = "this is some text"
+        self._assert_text_matches(text)
+    
+    def test_rejects_with_too_many_tokens(self):
+        text = "this is some text. This is some more"
+        self._assert_text_does_not_match(text)
+    
+    def test_accepts_with_only_two_tokens(self):
+        text = "this is"
+        self._assert_text_matches(text)
+
+    def test_accepts_with_maximum_number_of_tokens(self):
+        text = "one two, three four five six seven."
+        self._assert_text_matches(text)    
+
+    def test_rejects_unsupported_punctuation(self):
+        text = "this is some text}"
+        self._assert_text_does_not_match(text)
+    
+    def test_rejects_punctuation_in_invalid_location(self):
+        text = "this is so,me text"
+        self._assert_text_does_not_match(text)
+    
+    def test_accepts_consecutive_punctuation_marks(self):
+        text = "this is.,! some text!!"
+        self._assert_text_matches(text)
+    
+    def test_accepts_valid_punctuation_marks(self):
+        text = "this is a test,!.?:;"
+        self._assert_text_matches(text)
+
+    
 
 def create_bang_command():
     action = BasicAction("insert", ["!"])

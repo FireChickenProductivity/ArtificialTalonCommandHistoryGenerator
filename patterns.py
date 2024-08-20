@@ -336,15 +336,20 @@ class ProsePatternMatcher(PatternMatcher):
     def __init__(self, word_pattern_matcher: WordPatternMatcher):
         self.word_pattern_matcher = word_pattern_matcher
 
+    def _is_text_a_word(self, text: str) -> bool:
+        return self.word_pattern_matcher.does_belong_to_pattern(text.lower(), "")
+
     def does_belong_to_pattern(self, current_match: str, next_character: str) -> bool:
         total_text = current_match + next_character
         tokens = total_text.split(" ")
-        return are_tokens_valid_prose_tokens(tokens, self.word_pattern_matcher.does_belong_to_pattern)
+        return len(tokens) <= MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE and len(tokens) > 1 and \
+                are_tokens_valid_prose_tokens(tokens, self._is_text_a_word)
 
     def could_potentially_belong_to_pattern(self, current_match: str, next_character: str, is_end_of_text: bool = False) -> bool:
         total_text = current_match + next_character
         tokens = total_text.split(" ")
-        if len(tokens) > 1 and not are_tokens_valid_prose_tokens(tokens[:-1], self.word_pattern_matcher.does_belong_to_pattern):
+        if len(tokens) >= MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE or \
+            (len(tokens) > 1 and not are_tokens_valid_prose_tokens(tokens[:-1], self._is_text_a_word)):
             return False
         last_token = tokens[-1]
         alphabetic_characters, punctuation = compute_alphabetic_characters_and_punctuation_for_prose_token(last_token)
@@ -504,6 +509,10 @@ def create_formatted_words_pattern_matcher():
 def create_formatted_word_pattern_matcher():
     word_pattern_matcher = create_word_pattern_matcher()
     return FormattedWordPatternMatcher(word_pattern_matcher)
+
+def create_prose_pattern_matcher():
+    word_pattern_matcher = create_word_pattern_matcher()
+    return ProsePatternMatcher(word_pattern_matcher)
 
 def create_symbol_command(symbol: str):
     action = BasicAction('insert', [symbol])
