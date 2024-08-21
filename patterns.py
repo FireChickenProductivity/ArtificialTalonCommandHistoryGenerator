@@ -348,7 +348,7 @@ class ProsePatternMatcher(PatternMatcher):
     def could_potentially_belong_to_pattern(self, current_match: str, next_character: str, is_end_of_text: bool = False) -> bool:
         total_text = current_match + next_character
         tokens = total_text.split(" ")
-        if len(tokens) >= MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE or \
+        if len(tokens) > MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE or \
             (len(tokens) > 1 and not are_tokens_valid_prose_tokens(tokens[:-1], self._is_text_a_word)):
             return False
         last_token = tokens[-1]

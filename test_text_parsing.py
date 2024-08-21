@@ -33,6 +33,8 @@ def assert_command_history_matches_that_for_text(assertion_class, expected_histo
 def assert_pattern_matcher_match_outcome_is_expected(assertion_class, pattern_matcher, text, expected_outcome):
     actual_outcome = pattern_matcher.does_belong_to_pattern(text[:-1], text[-1])
     assertion_class.assertEqual(actual_outcome, expected_outcome)
+    if expected_outcome:
+        assertion_class.assertTrue(pattern_matcher.could_potentially_belong_to_pattern(text[:-1], text[-1]))
 
 def assert_pattern_matcher_matches_text(assertion_class, pattern_matcher, text):
     assert_pattern_matcher_match_outcome_is_expected(assertion_class, pattern_matcher, text, True)
