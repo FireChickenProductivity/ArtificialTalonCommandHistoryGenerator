@@ -42,6 +42,15 @@ def assert_pattern_matcher_matches_text(assertion_class, pattern_matcher, text):
 def assert_pattern_matcher_does_not_match_text(assertion_class, pattern_matcher, text):
     assert_pattern_matcher_match_outcome_is_expected(assertion_class, pattern_matcher, text, False)
 
+def assert_pattern_matcher_potential_match_outcome_matches_expected(assertion_class, pattern_matcher, text, expected_outcome):
+    actual_outcome = pattern_matcher.could_potentially_belong_to_pattern(text[:-1], text[-1])
+    assertion_class.assertEqual(actual_outcome, expected_outcome)
+
+def assert_pattern_matcher_could_potentially_match(assertion_class, pattern_matcher, text):
+    assert_pattern_matcher_potential_match_outcome_matches_expected(assertion_class, pattern_matcher, text, True)
+
+def assert_pattern_matcher_could_not_potentially_match(assertion_class, pattern_matcher, text):
+    assert_pattern_matcher_potential_match_outcome_matches_expected(assertion_class, pattern_matcher, text, False)
 
 class NewLinePatternMatcherTestCase(unittest.TestCase):
     def _create_non_matching_text_list(self):
@@ -172,6 +181,14 @@ class ProsePatternMatcherTestCase(unittest.TestCase):
     def _assert_text_does_not_match(self, text):
         self._assert_text_match_outcome_is_expected(text, False)
 
+    def _assert_text_could_match(self, text):
+        pattern_matcher = create_prose_pattern_matcher()
+        assert_pattern_matcher_could_potentially_match(self, pattern_matcher, text)
+    
+    def _assert_text_could_not_match(self, text):
+        pattern_matcher = create_prose_pattern_matcher()
+        assert_pattern_matcher_could_not_potentially_match(self, pattern_matcher, text)
+
     def test_rejects_single_token(self):
         tokens = ["chicken", "chicken."]
         self._assert_text_match_outcomes_are_expected(tokens, False)
@@ -216,6 +233,26 @@ class ProsePatternMatcherTestCase(unittest.TestCase):
     def test_accepts_valid_punctuation_marks(self):
         text = "this is a test,!.?:;"
         self._assert_text_matches(text)
+
+    def test_single_character_could_match(self):
+        text = "c"
+        self._assert_text_could_match(text)
+    
+    def test_single_word_could_match(self):
+        text = "chicken"
+        self._assert_text_could_match(text)
+
+    def test_symbol_could_not_match(self):
+        text = "}"
+        self._assert_text_could_not_match(text)
+    
+    def test_word_with_symbol_could_not_match(self):
+        text = "chicken}"
+        self._assert_text_could_not_match(text)
+    
+    def test_middle_punctuation_could_not_match(self):
+        text = "ch,icken"
+        self._assert_text_could_not_match(text)
 
     
 
