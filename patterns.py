@@ -568,12 +568,54 @@ def create_formatted_word_command(total_matching_text: str):
     command = create_insert_command(name + " " + total_matching_text.lower(), total_matching_text)
     return command
 
+#Taken from community
+WORDS_FOR_TITLE_COMMAND_TO_LEAVE_LOWERCASE = set([
+    "a", "an", "and", "as", "at", "but", "by", "en", "for", "if", "in", "nor", "of", "on", "or", "per", "the", "to", "v", "via", "vs",
+])
+
+def create_prose_command(total_matching_text: str):
+    tokens = total_matching_text.split(" ")
+    action = BasicAction('insert', [total_matching_text])
+    could_be_phrase_command = True
+    could_be_sentence_command = tokens[0][0].isupper()
+    could_be_title_command = True
+    words = []
+    for token in tokens:
+        alphabetic_characters, punctuation = compute_alphabetic_characters_and_punctuation_for_prose_token(token)
+        current_word = alphabetic_characters.lower()
+        if alphabetic_characters[0].isupper():
+            words.append("cap")
+            could_be_phrase_command = False
+        elif current_word not in WORDS_FOR_TITLE_COMMAND_TO_LEAVE_LOWERCASE:
+            could_be_title_command = False
+        words.append(current_word)
+        for character in punctuation:
+            punctuation_word = PUNCTUATION_MARKS_TO_NAME[character]
+            words.append(punctuation_word)
+            could_be_phrase_command = False
+
+    command_name = "say"
+    if could_be_phrase_command:
+        command_name = "phrase"
+    elif could_be_title_command:
+        command_name = "title"
+    elif could_be_sentence_command:
+        command_name = "sentence"
+    for word in words:
+        command_name += " " + word
+    command = Command(command_name, [action])
+    return command
+
+    
+    
+
 NAMES_TO_ACTION_CREATION_FUNCTIONS = {
     "symbol": create_symbol_command,
     "new line": create_new_line_command,
     "word": create_word_command,
     "formatted words": create_formatted_words_command,
     "formatted word": create_formatted_word_command,
+    "prose": create_prose_command,
 }
 
 def create_command_from_pattern_matcher(pattern_matcher: PatternMatcher, total_matching_text: str) -> Command:

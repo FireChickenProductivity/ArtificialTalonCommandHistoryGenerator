@@ -265,9 +265,20 @@ class ProsePatternMatcherTestCase(unittest.TestCase):
         text = "this  is"
         self._assert_text_could_not_match(text)
 
+def create_insert_command(utterance: str, text: str):
+    action = BasicAction("insert", [text])
+    return Command(utterance, [action])
+
 def create_bang_command():
     action = BasicAction("insert", ["!"])
     return Command('bang', [action])
+
+def create_brace_command():
+    action = BasicAction("insert", ["{"])
+    return Command('brace', [action])
+
+def create_dollar_sign_command():
+    return create_insert_command("dollar", "$")
 
 def create_dot_command():
     action = BasicAction("insert", ["."])
@@ -288,9 +299,6 @@ def create_z_command():
 def create_type_word_test_command():
     return Command('word test', [BasicAction("insert", ["test"])])
 
-def create_insert_command(utterance: str, text: str):
-    action = BasicAction("insert", [text])
-    return Command(utterance, [action])
 
 class FormattedWordPatternMatcherTest(unittest.TestCase):
     def test_matches_capitalized_word(self):
@@ -354,12 +362,12 @@ class TextParsingTest(unittest.TestCase):
     def test_handles_words_and_symbols(self):
         expected_command_history = [
             Command('word test', [BasicAction("insert", ["test"])]),
-            create_bang_command(),
+            create_brace_command(),
             Command('word this', [BasicAction("insert", ["this"])]),
+            create_dollar_sign_command(),
             create_dot_command(),
-            create_question_command(),
         ]
-        text = "test!this.?"
+        text = "test{this$."
         command_history = create_command_history_list_from_text(text)
         assert_command_histories_match(self, command_history, expected_command_history)
     
@@ -395,9 +403,9 @@ class TextParsingTest(unittest.TestCase):
         expected_command_history = [
             create_z_command(),
             create_type_word_test_command(),
-            create_bang_command(),
+            create_brace_command(),
         ]
-        text = "ztest!"
+        text = "ztest{"
         command_history = create_command_history_list_from_text(text)
         assert_command_histories_match(self, command_history, expected_command_history)
     
@@ -496,6 +504,11 @@ class TextParsingTest(unittest.TestCase):
         command_history = [command]
         assert_command_history_matches_that_for_text(self, command_history, text)
 
+    def test_handles_simple_prose(self):
+        text = "this is a test"
+        command = create_insert_command("phrase this is a test", text)
+        command_history = [command]
+        assert_command_history_matches_that_for_text(self, command_history, text)
 
 if __name__ == '__main__':
     unittest.main()
