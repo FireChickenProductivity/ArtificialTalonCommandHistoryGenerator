@@ -254,7 +254,16 @@ class ProsePatternMatcherTestCase(unittest.TestCase):
         text = "ch,icken"
         self._assert_text_could_not_match(text)
 
-    
+    def test_simple_prose_could_match_throughout(self):
+        text = "this is a test"
+        current_text = ""
+        for character in text:
+            current_text += character
+            self._assert_text_could_match(current_text)
+        
+    def test_consecutive_spaces_could_not_match(self):
+        text = "this  is"
+        self._assert_text_could_not_match(text)
 
 def create_bang_command():
     action = BasicAction("insert", ["!"])
