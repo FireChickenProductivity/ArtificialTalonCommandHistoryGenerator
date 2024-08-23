@@ -1,5 +1,6 @@
 from patterns import SYMBOLS_TO_SPOKEN_FORM, create_new_line_pattern_matcher, create_symbol_pattern_matcher, create_command_from_pattern_matcher, \
-    create_word_pattern_matcher, create_formatted_words_pattern_matcher, create_formatted_word_pattern_matcher, create_prose_pattern_matcher
+    create_word_pattern_matcher, create_formatted_words_pattern_matcher, create_formatted_word_pattern_matcher, create_prose_pattern_matcher, \
+    is_valid_prose_token
 from text_parsing import create_command_history_list_from_text
 from action_records import Command, BasicAction
 import unittest
@@ -52,6 +53,17 @@ def assert_pattern_matcher_could_potentially_match(assertion_class, pattern_matc
 def assert_pattern_matcher_could_not_potentially_match(assertion_class, pattern_matcher, text):
     assert_pattern_matcher_potential_match_outcome_matches_expected(assertion_class, pattern_matcher, text, False)
 
+def is_a_word(word: str) -> bool:
+    matcher = create_word_pattern_matcher()
+    return matcher.does_belong_to_pattern(word, "")
+
+class IsTextProseToken(unittest.TestCase):
+    def test_handles_capital_word(self):
+        self.assertTrue(is_valid_prose_token("Word", is_a_word))
+    
+    def test_handles_lowercase_word(self):
+        self.assertTrue(is_valid_prose_token("word", is_a_word))
+    
 class NewLinePatternMatcherTestCase(unittest.TestCase):
     def _create_non_matching_text_list(self):
         return ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', ' ']
@@ -532,13 +544,19 @@ class TextParsingTest(unittest.TestCase):
 
     def test_handles_prose_with_capital_words(self):
         text = "This is my Test"
-        command = create_insert_command("cap this is my cap test", text)
+        command = create_insert_command("say cap this is my cap test", text)
         command_history = [command]
         assert_command_history_matches_that_for_text(self, command_history, text)
     
     def test_handles_prose_with_first_word_capital(self):
         text = "This is my test"
         command = create_insert_command("sentence this is my test", text)
+        command_history = [command]
+        assert_command_history_matches_that_for_text(self, command_history, text)
+    
+    def test_handles_punctuation_in_prose(self):
+        text = "This, is a test."
+        command = create_insert_command("say this comma is a test period", text)
         command_history = [command]
         assert_command_history_matches_that_for_text(self, command_history, text)
 
