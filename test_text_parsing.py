@@ -559,6 +559,12 @@ class TextParsingTest(unittest.TestCase):
         command = create_insert_command("sentence this comma is a test period", text)
         command_history = [command]
         assert_command_history_matches_that_for_text(self, command_history, text)
+    
+    def test_handles_punctuation_in_prose_with_lowercase(self):
+        text = "is this, another test!?"
+        command = create_insert_command("say is this comma another test exclamation mark question mark", text)
+        command_history = [command]
+        assert_command_history_matches_that_for_text(self, command_history, text)
 
 if __name__ == '__main__':
     unittest.main()
