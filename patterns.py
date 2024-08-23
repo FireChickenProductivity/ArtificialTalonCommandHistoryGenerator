@@ -351,7 +351,8 @@ class ProsePatternMatcher(PatternMatcher):
         total_text = current_match + next_character
         tokens = total_text.split(" ")
         if len(tokens) > MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE or \
-            (len(tokens) > 1 and not are_tokens_valid_prose_tokens(tokens[:-1], self._is_text_a_word)):
+            (len(tokens) > 1 and not are_tokens_valid_prose_tokens(tokens[:-1], self._is_text_a_word)) or \
+            len(tokens) == 1 and is_end_of_text:
             return False
         last_token = tokens[-1]
         alphabetic_characters, punctuation = compute_alphabetic_characters_and_punctuation_for_prose_token(last_token)

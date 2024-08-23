@@ -264,6 +264,11 @@ class ProsePatternMatcherTestCase(unittest.TestCase):
     def test_consecutive_spaces_could_not_match(self):
         text = "this  is"
         self._assert_text_could_not_match(text)
+    
+    def test_single_token_could_not_match_at_the_end(self):
+        word = "chicken"
+        matcher = create_prose_pattern_matcher()
+        self.assertFalse(matcher.could_potentially_belong_to_pattern(word, ".", True))
 
 def create_insert_command(utterance: str, text: str):
     action = BasicAction("insert", [text])
@@ -371,6 +376,15 @@ class TextParsingTest(unittest.TestCase):
         command_history = create_command_history_list_from_text(text)
         assert_command_histories_match(self, command_history, expected_command_history)
     
+    def test_handles_words_and_symbols_without_mistakenly_detecting_prose(self):
+        expected_command_history = [
+            Command('word test', [BasicAction("insert", ["test"])]),
+            create_question_command(),
+        ]
+        text = "test?"
+        command_history = create_command_history_list_from_text(text)
+        assert_command_histories_match(self, command_history, expected_command_history)
+
     def test_handles_word_and_letter(self):
         expected_command_history = [
             create_type_word_test_command(),
