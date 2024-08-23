@@ -115,12 +115,14 @@ class Casing(Enum):
     OTHER = 4
 
 def compute_casing_of_word(word: str) -> Casing:
+    if not word:
+        raise ValueError("Word must have at least one character to compute its casing")
     if word.islower():
         return Casing.LOWER
+    elif word[0].isupper() and (len(word) == 1 or word[1:].islower()):
+        return Casing.CAPITALIZED
     elif word.isupper():
         return Casing.UPPER
-    elif word[0].isupper() and word[1:].islower():
-        return Casing.CAPITALIZED
     else:
         return Casing.OTHER
 
@@ -324,7 +326,7 @@ def is_valid_prose_token(token: str, is_a_word: Callable[[str], bool]):
     alphabetic_characters, punctuation = compute_alphabetic_characters_and_punctuation_for_prose_token(token)
     return is_a_word(alphabetic_characters) and \
         is_every_punctuation_character_supported_by_prose_commands(punctuation) \
-        and does_word_have_valid_prose_case(alphabetic_characters)
+        and (does_word_have_valid_prose_case(alphabetic_characters))
 
 def are_tokens_valid_prose_tokens(tokens: List[str], is_a_word: Callable[[str], bool]):
     for token in tokens:
@@ -585,16 +587,16 @@ def create_prose_command(total_matching_text: str):
         alphabetic_characters, punctuation = compute_alphabetic_characters_and_punctuation_for_prose_token(token)
         current_word = alphabetic_characters.lower()
         if alphabetic_characters[0].isupper():
-            words.append("cap")
             could_be_phrase_command = False
         elif current_word not in WORDS_FOR_TITLE_COMMAND_TO_LEAVE_LOWERCASE:
             could_be_title_command = False
-        words.append(current_word)
-        for character in punctuation:
+        words.append(alphabetic_characters)
+        for character in punctuation:   
             punctuation_word = PUNCTUATION_MARKS_TO_NAME[character]
             words.append(punctuation_word)
             could_be_phrase_command = False
-
+    if could_be_title_command:
+        could_be_sentence_command = False
     command_name = "say"
     if could_be_phrase_command:
         command_name = "phrase"
@@ -602,8 +604,13 @@ def create_prose_command(total_matching_text: str):
         command_name = "title"
     elif could_be_sentence_command:
         command_name = "sentence"
+    should_capitalize_words_with_cap = not could_be_title_command and not could_be_sentence_command
     for word in words:
-        command_name += " " + word
+        if should_capitalize_words_with_cap and compute_casing_of_word(word) == Casing.CAPITALIZED:
+            command_name += " " + "cap"
+        if could_be_sentence_command:
+            should_capitalize_words_with_cap = True
+        command_name += " " + word.lower()
     command = Command(command_name, [action])
     return command
 

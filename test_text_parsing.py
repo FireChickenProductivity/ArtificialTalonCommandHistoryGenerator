@@ -55,7 +55,7 @@ def assert_pattern_matcher_could_not_potentially_match(assertion_class, pattern_
 
 def is_a_word(word: str) -> bool:
     matcher = create_word_pattern_matcher()
-    return matcher.does_belong_to_pattern(word, "")
+    return matcher.does_belong_to_pattern(word.lower(), "")
 
 class IsTextProseToken(unittest.TestCase):
     def test_handles_capital_word(self):
@@ -544,7 +544,7 @@ class TextParsingTest(unittest.TestCase):
 
     def test_handles_prose_with_capital_words(self):
         text = "This is my Test"
-        command = create_insert_command("say cap this is my cap test", text)
+        command = create_insert_command("sentence this is my cap test", text)
         command_history = [command]
         assert_command_history_matches_that_for_text(self, command_history, text)
     
@@ -556,7 +556,7 @@ class TextParsingTest(unittest.TestCase):
     
     def test_handles_punctuation_in_prose(self):
         text = "This, is a test."
-        command = create_insert_command("say this comma is a test period", text)
+        command = create_insert_command("sentence this comma is a test period", text)
         command_history = [command]
         assert_command_history_matches_that_for_text(self, command_history, text)
 
