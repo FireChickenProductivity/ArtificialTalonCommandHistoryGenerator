@@ -523,6 +523,24 @@ class TextParsingTest(unittest.TestCase):
         command = create_insert_command("phrase this is a test", text)
         command_history = [command]
         assert_command_history_matches_that_for_text(self, command_history, text)
+    
+    def test_handles_title_command(self):
+        text = "What of Home, New York"
+        command = create_insert_command("title what of home comma new york", text)
+        command_history = [command]
+        assert_command_history_matches_that_for_text(self, command_history, text)
+
+    def test_handles_prose_with_capital_words(self):
+        text = "This is my Test"
+        command = create_insert_command("cap this is my cap test", text)
+        command_history = [command]
+        assert_command_history_matches_that_for_text(self, command_history, text)
+    
+    def test_handles_prose_with_first_word_capital(self):
+        text = "This is my test"
+        command = create_insert_command("sentence this is my test", text)
+        command_history = [command]
+        assert_command_history_matches_that_for_text(self, command_history, text)
 
 if __name__ == '__main__':
     unittest.main()

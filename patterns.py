@@ -346,7 +346,7 @@ class ProsePatternMatcher(PatternMatcher):
                 are_tokens_valid_prose_tokens(tokens, self._is_text_a_word)
 
     def could_potentially_belong_to_pattern(self, current_match: str, next_character: str, is_end_of_text: bool = False) -> bool:
-        if next_character == " " and not is_end_of_text and not current_match.endswith(" "):
+        if next_character == " " and current_match and not is_end_of_text and not current_match.endswith(" "):
             return self.could_potentially_belong_to_pattern(current_match[:-1], current_match[-1], is_end_of_text)
         total_text = current_match + next_character
         tokens = total_text.split(" ")
