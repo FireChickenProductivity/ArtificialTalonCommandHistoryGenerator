@@ -133,27 +133,21 @@ class CaseFormat(Enum):
     ALL_LOWER = 4
     OTHER = 5
 
+def is_single_letter_capitalized_word(word: str) -> bool:
+    return len(word) == 1 and word.isupper()
+
 def compute_case_format_for_words(words: List[str]) -> CaseFormat:
-    current_guess = None
-    first_casing = compute_casing_of_word(words[0])
-    previous_casing = first_casing
-    for word in words[1:]:
-        current_casing = compute_casing_of_word(word)
-        if current_casing == Casing.OTHER:
-            return CaseFormat.OTHER
-        elif current_casing == Casing.CAPITALIZED:
-            if first_casing == Casing.LOWER:
-                current_guess = CaseFormat.CAMEL
-            elif current_guess == None:
-                current_guess = CaseFormat.PASCAL
-        elif current_casing == Casing.UPPER:
-            current_guess = CaseFormat.ALL_CAPS
-        elif current_casing == Casing.LOWER:
-            current_guess = CaseFormat.ALL_LOWER
-        if current_casing != previous_casing and not (current_casing == Casing.CAPITALIZED and previous_casing == Casing.LOWER and current_guess == CaseFormat.CAMEL):
-            return CaseFormat.OTHER
-        previous_casing = current_casing
-    return current_guess
+    casings = [compute_casing_of_word(word) for word in words]
+    if all([casings[i] == Casing.CAPITALIZED or is_single_letter_capitalized_word(words[i]) for i in range(len(words))]):
+        return CaseFormat.PASCAL
+    elif all([casing == Casing.LOWER for casing in casings]):
+        return CaseFormat.ALL_LOWER
+    elif all([casings[i] == Casing.UPPER or is_single_letter_capitalized_word(words[i]) for i in range(len(words))]):
+        return CaseFormat.ALL_CAPS
+    elif all([casing == Casing.CAPITALIZED for casing in casings[1:]]) and casings[0] == Casing.LOWER:
+        return CaseFormat.CAMEL
+    else:
+        return CaseFormat.OTHER
 
 MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE = 7
 
