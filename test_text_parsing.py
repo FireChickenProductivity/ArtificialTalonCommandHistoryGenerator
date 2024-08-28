@@ -485,7 +485,7 @@ class TextParsingTest(unittest.TestCase):
             assert_command_history_matches_that_for_text(self, [insert_command], text)
         
     def test_handles_kabab_case(self):
-        words = ["is", "another", "test"]
+        words = ["is", "a", "test"]
         utterance = "kabab this"
         text ="this"
         for word in words:
