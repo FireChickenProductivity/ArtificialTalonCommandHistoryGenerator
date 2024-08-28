@@ -144,7 +144,8 @@ def compute_case_format_for_words(words: List[str]) -> CaseFormat:
         return CaseFormat.ALL_LOWER
     elif all([casings[i] == Casing.UPPER or is_single_letter_capitalized_word(words[i]) for i in range(len(words))]):
         return CaseFormat.ALL_CAPS
-    elif all([casing == Casing.CAPITALIZED for casing in casings[1:]]) and casings[0] == Casing.LOWER:
+    elif all([casings[i] == Casing.CAPITALIZED or is_single_letter_capitalized_word(words[i]) for i in range(1, len(words))]) \
+        and casings[0] == Casing.LOWER:
         return CaseFormat.CAMEL
     else:
         return CaseFormat.OTHER
