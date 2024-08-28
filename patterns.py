@@ -57,26 +57,42 @@ class WordPatternMatcher(PatternMatcher):
     def get_priority(self) -> int:
         return 1
 
-def separate_words_smashed_together(words: str, is_word, current_word_start: int = 0) -> List[str]:
-    words_starting_at_index = []
+def compute_sub_words(text: str, is_word) -> List[str]:
+    words = []
     current_word = ""
-    for i in range(current_word_start, len(words)):
-        current_word += words[i]
-        if is_word(current_word):
-            words_starting_at_index.append(current_word[:])
-    if words_starting_at_index:
-        for i in range(len(words_starting_at_index) - 1, -1, -1):
-            word = words_starting_at_index[i]
-            ending_index = current_word_start + len(word)
-            if ending_index == len(words):
-                return [word]
+    for character in text:
+        current_word += character
+        if is_word(current_word) and compute_casing_of_word(current_word) != Casing.OTHER:
+            words.append(current_word[:])
+            print('current_word', current_word)
+    return words
+
+def compute_best_separation_of_words_smashed_together_given_words_at_starting_index(
+    words: str,
+    is_word,
+    current_word_start: int, 
+    words_starting_at_index: List[str]
+    ):
+    for i in range(len(words_starting_at_index) - 1, -1, -1):
+        word = words_starting_at_index[i]
+        ending_index = current_word_start + len(word)
+        if ending_index == len(words):
+            return [word]
+        else:
+            remaining_words = separate_words_smashed_together(words, is_word, ending_index)
+            if remaining_words:
+                return [word] + remaining_words
             else:
-                remaining_words = separate_words_smashed_together(words, is_word, ending_index)
-                if remaining_words:
-                    return [word] + remaining_words
-                else:
-                    continue
-        return None
+                continue
+    return None
+
+def separate_words_smashed_together(words: str, is_word, current_word_start: int = 0) -> List[str]:
+    remaining_text = words[current_word_start:]
+    words_starting_at_index = compute_sub_words(remaining_text, is_word)
+    if words_starting_at_index:
+        return compute_best_separation_of_words_smashed_together_given_words_at_starting_index(
+            words, is_word, current_word_start, words_starting_at_index
+        )
     else:
         return None
 
@@ -188,13 +204,16 @@ class FormattedWordsPatternMatcher(PatternMatcher):
         return True
 
     def _do_tokens_belong_to_pattern_without_separator(self, tokens: List[str]) -> bool:
+        print('tokens', tokens)
         if len(tokens) > MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE:
             return False
         case_formatting = compute_case_format_for_words(tokens)
         if case_formatting == CaseFormat.OTHER:
+            print('case_formatting', case_formatting)
             return False
         for token in tokens:
             if not self._is_text_a_word(token):
+                print('and valid token', token)
                 return False
         return True
 
