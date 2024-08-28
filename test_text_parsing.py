@@ -475,7 +475,7 @@ class TextParsingTest(unittest.TestCase):
         assert_command_history_matches_that_for_text(self, expected_command_history, text)
     
     def test_handles_pascal_case(self):
-        words = ["is", "another", "test"]
+        words = ["is", "a", "test"]
         utterance = "hammer this"
         text ="This"
         for word in words:
@@ -495,7 +495,7 @@ class TextParsingTest(unittest.TestCase):
             assert_command_history_matches_that_for_text(self, [insert_command], text)
 
     def test_handles_constant_case(self):
-        words = ["is", "another", "test"]
+        words = ["is", "a", "test"]
         utterance = "constant this"
         text ="THIS"
         for word in words:
