@@ -469,9 +469,9 @@ class TextParsingTest(unittest.TestCase):
         text = "testThis"
         assert_command_history_matches_that_for_text(self, expected_command_history, text)
         expected_command_history = [
-            Command('camel test this more', [BasicAction("insert", ["testThisMore"])]),
+            Command('camel this a test', [BasicAction("insert", ["thisATest"])]),
         ]
-        text = "testThisMore"
+        text = "thisATest"
         assert_command_history_matches_that_for_text(self, expected_command_history, text)
     
     def test_handles_pascal_case(self):
