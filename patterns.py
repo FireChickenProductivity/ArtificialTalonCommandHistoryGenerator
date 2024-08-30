@@ -64,7 +64,6 @@ def compute_sub_words(text: str, is_word) -> List[str]:
         current_word += character
         if is_word(current_word) and compute_casing_of_word(current_word) != Casing.OTHER:
             words.append(current_word[:])
-            print('current_word', current_word)
     return words
 
 def compute_best_separation_of_words_smashed_together_given_words_at_starting_index(
@@ -80,7 +79,7 @@ def compute_best_separation_of_words_smashed_together_given_words_at_starting_in
             return [word]
         else:
             remaining_words = separate_words_smashed_together(words, is_word, ending_index)
-            if remaining_words:
+            if remaining_words and compute_case_format_for_words([word] + remaining_words) != CaseFormat.OTHER:
                 return [word] + remaining_words
             else:
                 continue
@@ -204,16 +203,13 @@ class FormattedWordsPatternMatcher(PatternMatcher):
         return True
 
     def _do_tokens_belong_to_pattern_without_separator(self, tokens: List[str]) -> bool:
-        print('tokens', tokens)
         if len(tokens) > MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE:
             return False
         case_formatting = compute_case_format_for_words(tokens)
         if case_formatting == CaseFormat.OTHER:
-            print('case_formatting', case_formatting)
             return False
         for token in tokens:
             if not self._is_text_a_word(token):
-                print('and valid token', token)
                 return False
         return True
 
