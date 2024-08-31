@@ -127,7 +127,6 @@ class PatternManager:
                 return
             elif not pattern.could_potentially_belong_to_pattern(text, next_character, text_information.is_at_the_end_of_the_text()):
                 self.patterns_that_could_match.pop(name)
-                print('patterns_that_could_match', self.patterns_that_could_match)
         self.matching_pattern = None
     
     def no_pattern_could_potentially_match(self, text_information: CurrentText):
