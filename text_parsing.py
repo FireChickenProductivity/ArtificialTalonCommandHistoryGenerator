@@ -94,7 +94,7 @@ class PatternManager:
             create_formatted_word_pattern_matcher(),
         ]
         self.matching_pattern = None
-        self.patterns_that_could_match_on_first_character = None
+        self.patterns_that_could_match = None
         self.last_match: Match = None
         self.reset_matching_information()
     
@@ -116,29 +116,32 @@ class PatternManager:
     def handle_text_information(self, text_information: CurrentText):
         text = text_information.get_text()
         next_character = text_information.get_next_character()
-        if not self.patterns_that_could_match_on_first_character:
-            self.patterns_that_could_match_on_first_character = [pattern 
+        if not self.patterns_that_could_match:
+            self.patterns_that_could_match = {pattern.get_name(): pattern 
                                                                  for pattern in self.patterns 
-                                                                 if pattern.could_potentially_belong_to_pattern(text, next_character)]
-        for pattern in self.patterns_that_could_match_on_first_character:
+                                                                 if pattern.could_potentially_belong_to_pattern(text, next_character)}
+        for name, pattern in self.patterns_that_could_match.copy().items():
             if pattern.does_belong_to_pattern(text, next_character):
                 self.last_match = Match(pattern, text_information.clone())
                 self.matching_pattern = pattern
                 return
+            elif not pattern.could_potentially_belong_to_pattern(text, next_character, text_information.is_at_the_end_of_the_text()):
+                self.patterns_that_could_match.pop(name)
+                print('patterns_that_could_match', self.patterns_that_could_match)
         self.matching_pattern = None
     
     def no_pattern_could_potentially_match(self, text_information: CurrentText):
         text = text_information.get_text()
         next_character = text_information.get_next_character()
         is_end_of_text = text_information.is_at_the_end_of_the_text()
-        for pattern in self.patterns:
+        for pattern in self.patterns_that_could_match.values():
             if pattern.could_potentially_belong_to_pattern(text, next_character, is_end_of_text):
                 return False
         return True
     
     def reset_matching_information(self):
         self.matching_pattern = None
-        self.patterns_that_could_match_on_first_character = None
+        self.patterns_that_could_match = None
         self.last_match = None
 
     def handle_match(self):
