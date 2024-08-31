@@ -57,6 +57,12 @@ class WordPatternMatcher(PatternMatcher):
     def get_priority(self) -> int:
         return 1
 
+def does_every_item_enlist_match_condition_function(input_list: List[str], match_condition_function: Callable[[int, str], bool]) -> bool:
+    for index, item in enumerate(input_list):
+        if not match_condition_function(index, item):
+            return False
+    return True
+
 def is_odd_length_list(input_list: List[str]) -> bool:
     return len(input_list) % 2 == 1
 
@@ -90,14 +96,26 @@ def is_single_letter_capitalized_word(word: str) -> bool:
 
 def compute_case_format_for_words(words: List[str]) -> CaseFormat:
     casings = [compute_casing_of_word(word) for word in words]
-    if all([casings[i] == Casing.CAPITALIZED or is_single_letter_capitalized_word(words[i]) for i in range(len(words))]):
+    if does_every_item_enlist_match_condition_function(
+        casings,
+        lambda i, casing: casing == Casing.CAPITALIZED or is_single_letter_capitalized_word(words[i])
+    ):
         return CaseFormat.PASCAL
-    elif all([casing == Casing.LOWER for casing in casings]):
+    elif does_every_item_enlist_match_condition_function(
+        casings,
+        lambda i, casing: casing == Casing.LOWER
+    ):
         return CaseFormat.ALL_LOWER
-    elif all([casings[i] == Casing.UPPER or is_single_letter_capitalized_word(words[i]) for i in range(len(words))]):
+    elif does_every_item_enlist_match_condition_function(
+        casings,
+        lambda i, casing: casing == Casing.UPPER or is_single_letter_capitalized_word(words[i])
+    ):
         return CaseFormat.ALL_CAPS
-    elif all([casings[i] == Casing.CAPITALIZED or is_single_letter_capitalized_word(words[i]) for i in range(1, len(words))]) \
-        and casings[0] == Casing.LOWER:
+    elif does_every_item_enlist_match_condition_function(
+        casings,
+        lambda i, casing: (casing == Casing.LOWER and i == 0) or \
+            (i > 0 and (casing == Casing.CAPITALIZED or casing == Casing.LOWER or is_single_letter_capitalized_word(words[i])))
+    ):
         return CaseFormat.CAMEL
     else:
         return CaseFormat.OTHER
