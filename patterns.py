@@ -41,7 +41,7 @@ class WordPatternMatcher(PatternMatcher):
         return total_match in self.word_set
     
     def could_potentially_belong_to_pattern(self, current_match: str, next_character: str, is_end_of_text: bool = False) -> bool:
-        if self.maximum_word_length < len(current_match) + 1:
+        if not next_character.isalpha() or self.maximum_word_length < len(current_match) + 1:
             return False
         if is_end_of_text:
             return self.does_belong_to_pattern(current_match, next_character)
@@ -261,6 +261,8 @@ class FormattedWordsPatternMatcher(PatternMatcher):
         return self.word_pattern_matcher.could_potentially_belong_to_pattern(text[:-1], text[-1])
 
     def could_potentially_belong_to_pattern(self, current_match: str, next_character: str, is_end_of_text: bool = False) -> bool:
+        if next_character not in self.SEPARATORS_TO_FORMATTER_NAME and not next_character.isalpha():
+            return False
         total_text = current_match + next_character
         if is_end_of_text:
             return self.does_belong_to_pattern(current_match, next_character)
@@ -307,6 +309,8 @@ class FormattedWordPatternMatcher(PatternMatcher):
         return self._does_text_have_valid_case(total_text) and self._is_current_match_word(current_match, next_character)
     
     def could_potentially_belong_to_pattern(self, current_match: str, next_character: str, is_end_of_text: bool = False) -> bool:
+        if not next_character.isalpha():
+            return False
         total_text = current_match + next_character
         return self._does_text_have_valid_case(total_text) and self.word_pattern_matcher.could_potentially_belong_to_pattern(current_match.lower(), next_character.lower(), is_end_of_text)
 
