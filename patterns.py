@@ -57,6 +57,51 @@ class WordPatternMatcher(PatternMatcher):
     def get_priority(self) -> int:
         return 1
 
+def is_odd_length_list(input_list: List[str]) -> bool:
+    return len(input_list) % 2 == 1
+
+class Casing(Enum):
+    LOWER = 1
+    UPPER = 2
+    CAPITALIZED = 3
+    OTHER = 4
+
+def compute_casing_of_word(word: str) -> Casing:
+    if not word:
+        raise ValueError("Word must have at least one character to compute its casing")
+    if word.islower():
+        return Casing.LOWER
+    elif word[0].isupper() and (len(word) == 1 or word[1:].islower()):
+        return Casing.CAPITALIZED
+    elif word.isupper():
+        return Casing.UPPER
+    else:
+        return Casing.OTHER
+
+class CaseFormat(Enum):
+    CAMEL = 1
+    PASCAL = 2
+    ALL_CAPS = 3
+    ALL_LOWER = 4
+    OTHER = 5
+
+def is_single_letter_capitalized_word(word: str) -> bool:
+    return len(word) == 1 and word.isupper()
+
+def compute_case_format_for_words(words: List[str]) -> CaseFormat:
+    casings = [compute_casing_of_word(word) for word in words]
+    if all([casings[i] == Casing.CAPITALIZED or is_single_letter_capitalized_word(words[i]) for i in range(len(words))]):
+        return CaseFormat.PASCAL
+    elif all([casing == Casing.LOWER for casing in casings]):
+        return CaseFormat.ALL_LOWER
+    elif all([casings[i] == Casing.UPPER or is_single_letter_capitalized_word(words[i]) for i in range(len(words))]):
+        return CaseFormat.ALL_CAPS
+    elif all([casings[i] == Casing.CAPITALIZED or is_single_letter_capitalized_word(words[i]) for i in range(1, len(words))]) \
+        and casings[0] == Casing.LOWER:
+        return CaseFormat.CAMEL
+    else:
+        return CaseFormat.OTHER
+
 def compute_sub_words(text: str, is_word) -> List[str]:
     words = []
     current_word = ""
@@ -119,51 +164,6 @@ def separate_potentially_formatted_words_into_tokens(text: str, is_word) -> List
         if not tokens:
             raise InvalidFormattedWordsTextException
     return tokens
-
-def is_odd_length_list(input_list: List[str]) -> bool:
-    return len(input_list) % 2 == 1
-
-class Casing(Enum):
-    LOWER = 1
-    UPPER = 2
-    CAPITALIZED = 3
-    OTHER = 4
-
-def compute_casing_of_word(word: str) -> Casing:
-    if not word:
-        raise ValueError("Word must have at least one character to compute its casing")
-    if word.islower():
-        return Casing.LOWER
-    elif word[0].isupper() and (len(word) == 1 or word[1:].islower()):
-        return Casing.CAPITALIZED
-    elif word.isupper():
-        return Casing.UPPER
-    else:
-        return Casing.OTHER
-
-class CaseFormat(Enum):
-    CAMEL = 1
-    PASCAL = 2
-    ALL_CAPS = 3
-    ALL_LOWER = 4
-    OTHER = 5
-
-def is_single_letter_capitalized_word(word: str) -> bool:
-    return len(word) == 1 and word.isupper()
-
-def compute_case_format_for_words(words: List[str]) -> CaseFormat:
-    casings = [compute_casing_of_word(word) for word in words]
-    if all([casings[i] == Casing.CAPITALIZED or is_single_letter_capitalized_word(words[i]) for i in range(len(words))]):
-        return CaseFormat.PASCAL
-    elif all([casing == Casing.LOWER for casing in casings]):
-        return CaseFormat.ALL_LOWER
-    elif all([casings[i] == Casing.UPPER or is_single_letter_capitalized_word(words[i]) for i in range(len(words))]):
-        return CaseFormat.ALL_CAPS
-    elif all([casings[i] == Casing.CAPITALIZED or is_single_letter_capitalized_word(words[i]) for i in range(1, len(words))]) \
-        and casings[0] == Casing.LOWER:
-        return CaseFormat.CAMEL
-    else:
-        return CaseFormat.OTHER
 
 MAXIMUM_NUMBER_OF_WORDS_PER_UTTERANCE = 7
 
