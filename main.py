@@ -29,4 +29,4 @@ if __name__ == '__main__':
     print("Starting...")
     command_history = create_command_history_list_from_text_file(input_path)
     output_command_history_to_file(command_history, output_path)
-    print("Done.")
+    print("Done. Generated a history with " + str(len(command_history)) + " items.")
