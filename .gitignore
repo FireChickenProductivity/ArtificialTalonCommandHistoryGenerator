@@ -2,3 +2,4 @@ local_test_files/
 __pycache__/
 .DS_Store
 settings.json
+out

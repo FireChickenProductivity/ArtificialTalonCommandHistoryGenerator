@@ -557,7 +557,7 @@ def create_symbol_command(symbol: str):
     return command
 
 def create_new_line_command(total_matching_text: str):
-    action = BasicAction('insert', ['\n'])
+    action = BasicAction('key', ['enter'])
     command = Command("enter", [action])
     return command
 

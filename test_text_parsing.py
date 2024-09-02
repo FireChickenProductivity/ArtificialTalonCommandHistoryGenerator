@@ -5,13 +5,19 @@ from text_parsing import create_command_history_list_from_text
 from action_records import Command, BasicAction
 import unittest
 
-def assert_insert_command_matches_text(assertion_class, command, text):
+def assert_single_action_single_argument_command_matches_text(assertion_class, command, text, name):
     assertion_class.assertEqual(len(command.get_actions()), 1)
     action = command.get_actions()[0]
-    assertion_class.assertEqual(action.get_name(), 'insert')
+    assertion_class.assertEqual(action.get_name(), name)
     assertion_class.assertEqual(len(action.get_arguments()), 1)
     argument_text = action.get_arguments()[0]
     assertion_class.assertEqual(argument_text, text)
+
+def assert_insert_command_matches_text(assertion_class, command, text):
+    assert_single_action_single_argument_command_matches_text(assertion_class, command, text, "insert")
+
+def assert_key_command_matches_text(assertion_class, command, text):
+    assert_single_action_single_argument_command_matches_text(assertion_class, command, text, "key")
 
 def assert_command_has_correct_name(assertion_class, command, expected_name):
     assertion_class.assertEqual(command.get_name(), expected_name)
@@ -88,7 +94,7 @@ class NewLinePatternMatcherTestCase(unittest.TestCase):
         pattern_matcher = create_new_line_pattern_matcher()
         command = create_command_from_pattern_matcher(pattern_matcher, '\n')
         assert_command_has_correct_name(self, command, 'enter')
-        assert_insert_command_matches_text(self, command, '\n')
+        assert_key_command_matches_text(self, command, 'enter')
 
 class WordPatternMatcherTestCase(unittest.TestCase):
     def test_handles_not_a_word(self):
@@ -306,7 +312,7 @@ def create_question_command():
     return Command('question', [action])
 
 def create_enter_command():
-    action = BasicAction("insert", ["\n"])
+    action = BasicAction("key", ["enter"])
     return Command('enter', [action])
 
 def create_z_command():
