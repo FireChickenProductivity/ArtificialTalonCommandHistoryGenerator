@@ -69,26 +69,43 @@ class IsTextProseToken(unittest.TestCase):
     
     def test_handles_lowercase_word(self):
         self.assertTrue(is_valid_prose_token("word", is_a_word))
-    
+
+def test_invalid_character_for_one_character_pattern_matcher(
+    assertion_class,
+    ):
+    valid_starting_text = ""
+    pattern_matcher = assertion_class._create_pattern_matcher()
+    for non_matching_text in assertion_class._create_non_matching_text_list():
+        assertion_class.assertFalse(pattern_matcher.does_belong_to_pattern(valid_starting_text, non_matching_text))
+        assertion_class.assertFalse(pattern_matcher.could_potentially_belong_to_pattern(valid_starting_text, non_matching_text))
+
+def test_valid_character_for_one_character_pattern_matcher(
+    assertion_class
+    ):
+    pattern_matcher = assertion_class._create_pattern_matcher()
+    valid_starting_text = ""
+    matching_character = assertion_class.get_matching_character()
+    assertion_class.assertTrue(pattern_matcher.does_belong_to_pattern(valid_starting_text, matching_character))
+    assertion_class.assertTrue(pattern_matcher.could_potentially_belong_to_pattern(valid_starting_text, matching_character))
+    for in_valid_starting_text in [matching_character, 'chicken']:
+        assertion_class.assertFalse(pattern_matcher.does_belong_to_pattern(in_valid_starting_text, matching_character))
+        assertion_class.assertFalse(pattern_matcher.could_potentially_belong_to_pattern(in_valid_starting_text, matching_character))
+
 class NewLinePatternMatcherTestCase(unittest.TestCase):
     def _create_non_matching_text_list(self):
         return ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', ' ']
+
+    def _create_pattern_matcher(self):
+        return create_new_line_pattern_matcher()
+
+    def get_matching_character(self):
+        return '\n'
     
     def test_handles_valid_character(self):
-        pattern_matcher = create_new_line_pattern_matcher()
-        valid_starting_text = ""
-        self.assertTrue(pattern_matcher.does_belong_to_pattern(valid_starting_text, '\n'))
-        self.assertTrue(pattern_matcher.could_potentially_belong_to_pattern(valid_starting_text, '\n'))
-        for in_valid_starting_text in ['\n', 'chicken'] :
-            self.assertFalse(pattern_matcher.does_belong_to_pattern(in_valid_starting_text, '\n'))
-            self.assertFalse(pattern_matcher.could_potentially_belong_to_pattern(in_valid_starting_text, '\n'))
+        test_valid_character_for_one_character_pattern_matcher(self)
         
     def test_handles_invalid_character(self):
-        pattern_matcher = create_new_line_pattern_matcher()
-        valid_starting_text = ""
-        for non_matching_text in self._create_non_matching_text_list():
-            self.assertFalse(pattern_matcher.does_belong_to_pattern(valid_starting_text, non_matching_text))
-            self.assertFalse(pattern_matcher.could_potentially_belong_to_pattern(valid_starting_text, non_matching_text))
+        test_invalid_character_for_one_character_pattern_matcher(self)
 
     def test_creates_correct_command(self):
         pattern_matcher = create_new_line_pattern_matcher()
@@ -100,21 +117,17 @@ class TabPatternMatcherTestCase(unittest.TestCase):
     def _create_non_matching_text_list(self):
         return ['a', 'b', ' ', '\n']
 
+    def _create_pattern_matcher(self):
+        return create_tab_pattern_matcher()
+
+    def get_matching_character(self):
+        return '\t'
+
     def test_handles_invalid_character(self):
-        pattern_matcher = create_tab_pattern_matcher()
-        valid_starting_text = ""
-        for non_matching_text in self._create_non_matching_text_list():
-            self.assertFalse(pattern_matcher.does_belong_to_pattern(valid_starting_text, non_matching_text))
-            self.assertFalse(pattern_matcher.could_potentially_belong_to_pattern(valid_starting_text, non_matching_text))
+        test_invalid_character_for_one_character_pattern_matcher(self)
 
     def test_handles_valid_character(self):
-        pattern_matcher = create_tab_pattern_matcher()
-        valid_starting_text = ""
-        self.assertTrue(pattern_matcher.does_belong_to_pattern(valid_starting_text, '\t'))
-        self.assertTrue(pattern_matcher.could_potentially_belong_to_pattern(valid_starting_text, '\t'))
-        for in_valid_starting_text in ['\t', 'chicken'] :
-            self.assertFalse(pattern_matcher.does_belong_to_pattern(in_valid_starting_text, '\t'))
-            self.assertFalse(pattern_matcher.could_potentially_belong_to_pattern(in_valid_starting_text, '\t'))
+        test_valid_character_for_one_character_pattern_matcher(self)
         
     def test_creates_correct_command(self):
         pattern_matcher = create_tab_pattern_matcher()
