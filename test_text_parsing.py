@@ -91,6 +91,16 @@ def test_valid_character_for_one_character_pattern_matcher(
         assertion_class.assertFalse(pattern_matcher.does_belong_to_pattern(in_valid_starting_text, matching_character))
         assertion_class.assertFalse(pattern_matcher.could_potentially_belong_to_pattern(in_valid_starting_text, matching_character))
 
+def test_creates_correct_command_for_one_character_pattern_matcher(
+        assertion_class,
+        command_name,
+        text
+    ):
+    pattern_matcher = assertion_class._create_pattern_matcher()
+    command = create_command_from_pattern_matcher(pattern_matcher, assertion_class.get_matching_character())
+    assert_command_has_correct_name(assertion_class, command, command_name)
+    assert_key_command_matches_text(assertion_class, command, text)
+
 class NewLinePatternMatcherTestCase(unittest.TestCase):
     def _create_non_matching_text_list(self):
         return ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', ' ']
@@ -108,10 +118,7 @@ class NewLinePatternMatcherTestCase(unittest.TestCase):
         test_invalid_character_for_one_character_pattern_matcher(self)
 
     def test_creates_correct_command(self):
-        pattern_matcher = create_new_line_pattern_matcher()
-        command = create_command_from_pattern_matcher(pattern_matcher, '\n')
-        assert_command_has_correct_name(self, command, 'enter')
-        assert_key_command_matches_text(self, command, 'enter')
+        test_creates_correct_command_for_one_character_pattern_matcher(self, 'enter', 'enter')
     
 class TabPatternMatcherTestCase(unittest.TestCase):
     def _create_non_matching_text_list(self):
@@ -130,10 +137,7 @@ class TabPatternMatcherTestCase(unittest.TestCase):
         test_valid_character_for_one_character_pattern_matcher(self)
         
     def test_creates_correct_command(self):
-        pattern_matcher = create_tab_pattern_matcher()
-        command = create_command_from_pattern_matcher(pattern_matcher, '\t')
-        assert_command_has_correct_name(self, command, 'tab')
-        assert_key_command_matches_text(self, command, 'tab')
+        test_creates_correct_command_for_one_character_pattern_matcher(self, 'tab', 'tab')
 
 class WordPatternMatcherTestCase(unittest.TestCase):
     def test_handles_not_a_word(self):
