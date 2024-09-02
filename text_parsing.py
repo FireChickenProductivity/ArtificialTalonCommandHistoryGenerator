@@ -2,7 +2,7 @@ from action_records import Command
 from typing import Callable, List
 from patterns import PatternMatcher, create_new_line_pattern_matcher, create_symbol_pattern_matcher, create_command_from_pattern_matcher, \
     create_word_pattern_matcher, create_formatted_words_pattern_matcher, create_formatted_word_pattern_matcher, \
-    create_prose_pattern_matcher
+    create_prose_pattern_matcher, create_tab_pattern_matcher
 
 class CurrentText:
     def __init__(self):
@@ -87,6 +87,7 @@ class PatternManager:
     def __init__(self):
         self.patterns: List[PatternMatcher] = [
             create_new_line_pattern_matcher(),
+            create_tab_pattern_matcher(),
             create_symbol_pattern_matcher(),
             create_word_pattern_matcher(),
             create_formatted_words_pattern_matcher(),

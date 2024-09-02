@@ -536,6 +536,12 @@ def create_new_line_pattern_matcher():
 
     return SingleCharacterPatternMatcher(is_valid_character, "new line")
 
+def create_tab_pattern_matcher():
+    def is_valid_character(character: str) -> bool:
+        return character == '\t'
+
+    return SingleCharacterPatternMatcher(is_valid_character, "tab")
+
 def create_word_pattern_matcher():
     return WordPatternMatcher(WORDS, MAXIMUM_WORD_LENGTH)
 
@@ -559,6 +565,11 @@ def create_symbol_command(symbol: str):
 def create_new_line_command(total_matching_text: str):
     action = BasicAction('key', ['enter'])
     command = Command("enter", [action])
+    return command
+
+def create_tab_command(total_matching_text: str):
+    action = BasicAction('key', ['tab'])
+    command = Command("tab", [action])
     return command
 
 def create_word_command(total_matching_text: str):
@@ -656,6 +667,7 @@ NAMES_TO_ACTION_CREATION_FUNCTIONS = {
     "formatted words": create_formatted_words_command,
     "formatted word": create_formatted_word_command,
     "prose": create_prose_command,
+    "tab": create_tab_command,
 }
 
 def create_command_from_pattern_matcher(pattern_matcher: PatternMatcher, total_matching_text: str) -> Command:

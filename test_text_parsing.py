@@ -1,6 +1,6 @@
 from patterns import SYMBOLS_TO_SPOKEN_FORM, create_new_line_pattern_matcher, create_symbol_pattern_matcher, create_command_from_pattern_matcher, \
     create_word_pattern_matcher, create_formatted_words_pattern_matcher, create_formatted_word_pattern_matcher, create_prose_pattern_matcher, \
-    is_valid_prose_token
+    is_valid_prose_token, create_tab_pattern_matcher
 from text_parsing import create_command_history_list_from_text
 from action_records import Command, BasicAction
 import unittest
@@ -95,6 +95,32 @@ class NewLinePatternMatcherTestCase(unittest.TestCase):
         command = create_command_from_pattern_matcher(pattern_matcher, '\n')
         assert_command_has_correct_name(self, command, 'enter')
         assert_key_command_matches_text(self, command, 'enter')
+    
+class TabPatternMatcherTestCase(unittest.TestCase):
+    def _create_non_matching_text_list(self):
+        return ['a', 'b', ' ', '\n']
+
+    def test_handles_invalid_character(self):
+        pattern_matcher = create_tab_pattern_matcher()
+        valid_starting_text = ""
+        for non_matching_text in self._create_non_matching_text_list():
+            self.assertFalse(pattern_matcher.does_belong_to_pattern(valid_starting_text, non_matching_text))
+            self.assertFalse(pattern_matcher.could_potentially_belong_to_pattern(valid_starting_text, non_matching_text))
+
+    def test_handles_valid_character(self):
+        pattern_matcher = create_tab_pattern_matcher()
+        valid_starting_text = ""
+        self.assertTrue(pattern_matcher.does_belong_to_pattern(valid_starting_text, '\t'))
+        self.assertTrue(pattern_matcher.could_potentially_belong_to_pattern(valid_starting_text, '\t'))
+        for in_valid_starting_text in ['\t', 'chicken'] :
+            self.assertFalse(pattern_matcher.does_belong_to_pattern(in_valid_starting_text, '\t'))
+            self.assertFalse(pattern_matcher.could_potentially_belong_to_pattern(in_valid_starting_text, '\t'))
+        
+    def test_creates_correct_command(self):
+        pattern_matcher = create_tab_pattern_matcher()
+        command = create_command_from_pattern_matcher(pattern_matcher, '\t')
+        assert_command_has_correct_name(self, command, 'tab')
+        assert_key_command_matches_text(self, command, 'tab')
 
 class WordPatternMatcherTestCase(unittest.TestCase):
     def test_handles_not_a_word(self):
